@@ -3,8 +3,8 @@ import { AuthLayout } from '../components/layout/AuthLayout';
 import { Button } from '../components/ui/Button';
 import { Field, Input } from '../components/ui/Field';
 import { Notice } from '../components/ui/States';
-import { useSession } from '../session/SessionProvider';
-import { InvalidCredentialsError } from '../session/types';
+import { apiErrorMessage, classifyApiError } from '../lib/apiError';
+import { useSession, type SignedOutReason } from '../session/SessionProvider';
 
 type FieldErrors = { email?: string; password?: string };
 
@@ -17,12 +17,18 @@ function validate(email: string, password: string): FieldErrors {
   else if (!EMAIL_PATTERN.test(email.trim()))
     errors.email = 'Ingresa un correo válido.';
   if (!password) errors.password = 'Ingresa tu contraseña.';
-  else if (password.length < 8)
-    errors.password = 'Debe tener al menos 8 caracteres.';
   return errors;
 }
 
-export function LoginPage() {
+/** Mensaje de error de login. 401 es genérico para no permitir enumeración. */
+function loginErrorMessage(error: unknown): string {
+  const kind = classifyApiError(error);
+  if (kind === 'unauthorized') return 'Correo o contraseña incorrectos.';
+  if (kind === 'invalid') return 'Revisa el correo y la contraseña ingresados.';
+  return apiErrorMessage(kind);
+}
+
+export function LoginPage({ reason }: { reason: SignedOutReason }) {
   const { login } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,13 +45,9 @@ export function LoginPage() {
 
     setSubmitting(true);
     try {
-      await login({ email, password });
+      await login({ email: email.trim(), password });
     } catch (error) {
-      setFormError(
-        error instanceof InvalidCredentialsError
-          ? error.message
-          : 'No pudimos iniciar sesión. Inténtalo nuevamente.',
-      );
+      setFormError(loginErrorMessage(error));
       setSubmitting(false);
     }
   };
@@ -60,7 +62,15 @@ export function LoginPage() {
         onSubmit={(event) => void onSubmit(event)}
         noValidate
       >
-        {formError && <Notice tone="danger">{formError}</Notice>}
+        {formError ? (
+          <Notice tone="danger">{formError}</Notice>
+        ) : reason === 'expired' ? (
+          <Notice tone="warning">
+            Tu sesión expiró. Vuelve a iniciar sesión para continuar.
+          </Notice>
+        ) : reason === 'signed-out' ? (
+          <Notice tone="success">Cerraste sesión correctamente.</Notice>
+        ) : null}
         <Field label="Correo electrónico" error={errors.email}>
           {(props) => (
             <Input

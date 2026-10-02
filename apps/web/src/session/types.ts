@@ -1,54 +1,27 @@
-/*
- * Forma de sesión que la UI necesita. Es una PROPUESTA de contrato: cuando el
- * backend publique el definitivo en @inventario/types, estos tipos deben
- * reemplazarse por los compartidos.
+import type {
+  AuthSessionResponse,
+  LoginRequest,
+  TenantOption,
+} from '../lib/apiTypes.ts';
+
+/**
+ * Sesión que consume la UI: la respuesta real de /auth/me más los tenants
+ * disponibles (GET /tenants) para el selector de empresa.
  */
-
-export type SessionUser = {
-  id: string;
-  email: string;
-  name: string;
-};
-
-export type TenantMembershipSummary = {
-  tenantId: string;
-  tenantName: string;
-  /**
-   * Nombre del rol en ese tenant. Es texto libre porque en el schema los
-   * roles son registros por tenant, no un enum cerrado.
-   */
-  roleName: string;
-};
-
-export type Session = {
-  user: SessionUser;
-  memberships: TenantMembershipSummary[];
-  /** null cuando el usuario aún no eligió tenant activo. */
-  activeTenantId: string | null;
-};
-
-export type LoginCredentials = {
-  email: string;
-  password: string;
+export type Session = AuthSessionResponse & {
+  tenants: TenantOption[];
 };
 
 /**
- * Puerto que la UI usa para hablar con la autenticación. La implementación
- * mock vive en mockSessionSource.ts; la real llamará a @inventario/api-client.
+ * Puerto de autenticación de la UI. La implementación real vive en
+ * apiSessionSource.ts; los componentes solo conocen esta interfaz.
  */
 export interface SessionSource {
+  /** null si no hay sesión (401). Otros errores se propagan. */
   getSession(): Promise<Session | null>;
-  login(credentials: LoginCredentials): Promise<Session>;
+  login(credentials: LoginRequest): Promise<Session>;
   switchTenant(tenantId: string): Promise<Session>;
   logout(): Promise<void>;
-}
-
-/** Error de credenciales: mensaje genérico para no facilitar enumeración. */
-export class InvalidCredentialsError extends Error {
-  constructor() {
-    super('Correo o contraseña incorrectos.');
-    this.name = 'InvalidCredentialsError';
-  }
 }
 
 /** Traducciones de los roles base de docs/ARCHITECTURE.md (RBAC). */
@@ -60,7 +33,10 @@ const baseRoleLabels: Partial<Record<string, string>> = {
   Viewer: 'Solo lectura',
 };
 
-/** Etiqueta visible de un rol; los roles no conocidos se muestran tal cual. */
+/**
+ * Etiqueta visible de un rol; los roles no conocidos se muestran tal cual.
+ * Solo es presentación: no se usa para decidir permisos.
+ */
 export function roleLabel(roleName: string): string {
   return baseRoleLabels[roleName] ?? roleName;
 }

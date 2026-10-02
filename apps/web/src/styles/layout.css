@@ -250,12 +250,6 @@
   }
 }
 
-@media (max-width: 639px) {
-  .topbar__demo {
-    display: none;
-  }
-}
-
 /* ===== Auth ===== */
 .auth-layout {
   min-height: 100vh;
@@ -301,12 +295,6 @@
 .auth-card__description {
   margin: var(--space-1) 0 var(--space-6);
   color: var(--color-text-muted);
-}
-
-.auth-layout__footnote {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  text-align: center;
 }
 
 /* ===== Page header ===== */

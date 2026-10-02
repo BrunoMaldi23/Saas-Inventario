@@ -15,6 +15,9 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:status": "prisma migrate status",
+    "prisma:generate": "pnpm db:generate",
+    "prisma:validate": "prisma validate",
+    "prisma:migrate": "pnpm db:migrate",
     "db:bootstrap": "pnpm --filter @inventario/api build && pnpm --filter @inventario/api bootstrap"
   },
   "dependencies": {

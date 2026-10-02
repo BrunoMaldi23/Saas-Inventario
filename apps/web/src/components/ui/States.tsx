@@ -46,8 +46,26 @@ export function EmptyState({
   );
 }
 
+/** 403: el backend (o los permisos del tenant activo) no permiten el acceso. */
+export function ForbiddenState({
+  description = 'Tu rol en esta empresa no permite ver esta sección. Si crees que es un error, contacta a un administrador.',
+}: {
+  description?: ReactNode;
+}) {
+  return (
+    <div className="state" role="alert">
+      <span className="state__icon">
+        <Icon name="lock" size={22} />
+      </span>
+      <h3 className="state__title">No tienes permiso</h3>
+      <p className="state__description">{description}</p>
+    </div>
+  );
+}
+
 type ErrorStateProps = {
   title?: string;
+  icon?: IconName;
   description?: ReactNode;
   onRetry?: () => void;
 };
@@ -55,12 +73,13 @@ type ErrorStateProps = {
 export function ErrorState({
   title = 'No pudimos cargar la información',
   description = 'Revisa tu conexión e inténtalo nuevamente.',
+  icon = 'alertTriangle',
   onRetry,
 }: ErrorStateProps) {
   return (
     <div className="state" role="alert">
       <span className="state__icon state__icon--danger">
-        <Icon name="alertTriangle" size={22} />
+        <Icon name={icon} size={22} />
       </span>
       <h3 className="state__title">{title}</h3>
       <p className="state__description">{description}</p>

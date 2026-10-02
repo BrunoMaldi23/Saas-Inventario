@@ -1,4 +1,18 @@
 import type {
+  CatalogQuery,
+  CatalogPage,
+  Company,
+  CreateCompany,
+  Branch,
+  CreateBranch,
+  Category,
+  CreateCategory,
+  Product,
+  CreateProduct,
+  Supplier,
+  CreateSupplier,
+  Warehouse,
+  CreateWarehouse,
   AuthSessionResponse,
   ChangeMembershipStatusRequest,
   ChangeRoleRequest,
@@ -15,6 +29,13 @@ import type {
   UserSummary,
 } from '@inventario/types';
 import {
+  catalogPageSchema,
+  companySchema,
+  branchSchema,
+  categorySchema,
+  productSchema,
+  supplierSchema,
+  warehouseSchema,
   authSessionResponseSchema,
   databaseHealthResponseSchema,
   healthResponseSchema,
@@ -125,6 +146,199 @@ export async function changeMembershipStatus(
   return membershipViewSchema.parse(
     await requestJson(
       `/api/v1/memberships/${encodeURIComponent(id)}/status`,
+      'PATCH',
+      input,
+    ),
+  );
+}
+
+function catalogPath(path: string, query: CatalogQuery = {}): string {
+  const params = new URLSearchParams();
+  if (query.page !== undefined) params.set('page', String(query.page));
+  if (query.pageSize !== undefined)
+    params.set('pageSize', String(query.pageSize));
+  if (query.search !== undefined) params.set('search', query.search);
+  if (query.status !== undefined) params.set('status', query.status);
+  const suffix = params.toString();
+  return suffix ? `${path}?${suffix}` : path;
+}
+
+export async function listCompanies(
+  query: CatalogQuery = {},
+): Promise<CatalogPage<Company>> {
+  return catalogPageSchema(companySchema).parse(
+    await requestJson(catalogPath('/api/v1/companies', query)),
+  );
+}
+export async function getCompany(id: string): Promise<Company> {
+  return companySchema.parse(
+    await requestJson(`/api/v1/companies/${encodeURIComponent(id)}`),
+  );
+}
+export async function createCompany(input: CreateCompany): Promise<Company> {
+  return companySchema.parse(
+    await requestJson('/api/v1/companies', 'POST', input),
+  );
+}
+export async function updateCompany(
+  id: string,
+  input: Partial<CreateCompany>,
+): Promise<Company> {
+  return companySchema.parse(
+    await requestJson(
+      `/api/v1/companies/${encodeURIComponent(id)}`,
+      'PATCH',
+      input,
+    ),
+  );
+}
+
+export async function listBranches(
+  query: CatalogQuery = {},
+): Promise<CatalogPage<Branch>> {
+  return catalogPageSchema(branchSchema).parse(
+    await requestJson(catalogPath('/api/v1/branches', query)),
+  );
+}
+export async function getBranch(id: string): Promise<Branch> {
+  return branchSchema.parse(
+    await requestJson(`/api/v1/branches/${encodeURIComponent(id)}`),
+  );
+}
+export async function createBranch(input: CreateBranch): Promise<Branch> {
+  return branchSchema.parse(
+    await requestJson('/api/v1/branches', 'POST', input),
+  );
+}
+export async function updateBranch(
+  id: string,
+  input: Partial<CreateBranch>,
+): Promise<Branch> {
+  return branchSchema.parse(
+    await requestJson(
+      `/api/v1/branches/${encodeURIComponent(id)}`,
+      'PATCH',
+      input,
+    ),
+  );
+}
+
+export async function listCategories(
+  query: CatalogQuery = {},
+): Promise<CatalogPage<Category>> {
+  return catalogPageSchema(categorySchema).parse(
+    await requestJson(catalogPath('/api/v1/categories', query)),
+  );
+}
+export async function getCategory(id: string): Promise<Category> {
+  return categorySchema.parse(
+    await requestJson(`/api/v1/categories/${encodeURIComponent(id)}`),
+  );
+}
+export async function createCategory(input: CreateCategory): Promise<Category> {
+  return categorySchema.parse(
+    await requestJson('/api/v1/categories', 'POST', input),
+  );
+}
+export async function updateCategory(
+  id: string,
+  input: Partial<CreateCategory>,
+): Promise<Category> {
+  return categorySchema.parse(
+    await requestJson(
+      `/api/v1/categories/${encodeURIComponent(id)}`,
+      'PATCH',
+      input,
+    ),
+  );
+}
+
+export async function listProducts(
+  query: CatalogQuery = {},
+): Promise<CatalogPage<Product>> {
+  return catalogPageSchema(productSchema).parse(
+    await requestJson(catalogPath('/api/v1/products', query)),
+  );
+}
+export async function getProduct(id: string): Promise<Product> {
+  return productSchema.parse(
+    await requestJson(`/api/v1/products/${encodeURIComponent(id)}`),
+  );
+}
+export async function createProduct(input: CreateProduct): Promise<Product> {
+  return productSchema.parse(
+    await requestJson('/api/v1/products', 'POST', input),
+  );
+}
+export async function updateProduct(
+  id: string,
+  input: Partial<CreateProduct>,
+): Promise<Product> {
+  return productSchema.parse(
+    await requestJson(
+      `/api/v1/products/${encodeURIComponent(id)}`,
+      'PATCH',
+      input,
+    ),
+  );
+}
+
+export async function listSuppliers(
+  query: CatalogQuery = {},
+): Promise<CatalogPage<Supplier>> {
+  return catalogPageSchema(supplierSchema).parse(
+    await requestJson(catalogPath('/api/v1/suppliers', query)),
+  );
+}
+export async function getSupplier(id: string): Promise<Supplier> {
+  return supplierSchema.parse(
+    await requestJson(`/api/v1/suppliers/${encodeURIComponent(id)}`),
+  );
+}
+export async function createSupplier(input: CreateSupplier): Promise<Supplier> {
+  return supplierSchema.parse(
+    await requestJson('/api/v1/suppliers', 'POST', input),
+  );
+}
+export async function updateSupplier(
+  id: string,
+  input: Partial<CreateSupplier>,
+): Promise<Supplier> {
+  return supplierSchema.parse(
+    await requestJson(
+      `/api/v1/suppliers/${encodeURIComponent(id)}`,
+      'PATCH',
+      input,
+    ),
+  );
+}
+
+export async function listWarehouses(
+  query: CatalogQuery = {},
+): Promise<CatalogPage<Warehouse>> {
+  return catalogPageSchema(warehouseSchema).parse(
+    await requestJson(catalogPath('/api/v1/warehouses', query)),
+  );
+}
+export async function getWarehouse(id: string): Promise<Warehouse> {
+  return warehouseSchema.parse(
+    await requestJson(`/api/v1/warehouses/${encodeURIComponent(id)}`),
+  );
+}
+export async function createWarehouse(
+  input: CreateWarehouse,
+): Promise<Warehouse> {
+  return warehouseSchema.parse(
+    await requestJson('/api/v1/warehouses', 'POST', input),
+  );
+}
+export async function updateWarehouse(
+  id: string,
+  input: Partial<CreateWarehouse>,
+): Promise<Warehouse> {
+  return warehouseSchema.parse(
+    await requestJson(
+      `/api/v1/warehouses/${encodeURIComponent(id)}`,
       'PATCH',
       input,
     ),

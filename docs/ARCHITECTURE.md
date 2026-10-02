@@ -47,6 +47,10 @@ NestJS usa guards globales en orden: comprobacion de origen para escrituras, aut
 
 La sesion es un token aleatorio en cookie HTTP-only; PostgreSQL guarda solo su hash SHA-256 y expiracion. El login no selecciona tenant automaticamente. Cada request de tenant vuelve a comprobar usuario, tenant y membresia activos y obtiene permisos del rol asociado. Los contratos HTTP estan en `docs/API_CONTRACTS.md`; `apps/web` permanece bajo trabajo frontend paralelo.
 
+## Implementacion de Fase 3
+
+El catalogo operacional incorpora seis recursos REST: empresas, sucursales, categorias, productos, proveedores y bodegas. Sus controladores validan payloads y declaran permisos; `CatalogService` contiene las consultas, reglas de relacion y auditoria. Cada consulta se filtra por el tenant activo resuelto por los guards de Fase 2. Las claves foraneas compuestas impiden que sucursales, categorias, productos o bodegas apunten a registros de otro tenant, incluso si una escritura eludiera la API. No existen saldos ni movimientos de stock.
+
 ## Principios de diseno
 
 - Modularidad por dominio funcional.

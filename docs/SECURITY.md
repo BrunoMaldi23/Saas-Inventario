@@ -70,6 +70,8 @@ Reglas:
 
 Implementacion de Fase 2: cada request protegida revisa la sesion, estado de usuario y, cuando corresponde, tenant y membresia activos. Roles y permisos se consultan del servidor en cada request; no se aceptan permisos del cliente. Owner gestiona todas las identidades; Admin gestiona solo usuarios con roles operativos y no puede asignar ni modificar Owner o Admin. Los cambios que retirarian al ultimo Owner activo se rechazan dentro de transacciones serializables. Las operaciones de identidad relevantes escriben auditoria en la misma transaccion.
 
+Implementacion de Fase 3: cada ruta de catalogo declara permiso `recurso:read` o `recurso:write`. El API toma `tenantId` exclusivamente de la sesion; Zod rechaza campos no declarados, incluido `tenantId`, en escrituras. Las lecturas y los targets de actualizacion se acotan por tenant. Las referencias a Company, Branch y Category se validan en el servicio y estan protegidas tambien por claves foraneas compuestas. La auditoria de creacion y actualizacion se escribe en la misma transaccion que el registro. La desactivacion se realiza con PATCH de `status`; no se exponen DELETE comerciales.
+
 ## Validacion de inputs
 
 - Validar tipos, longitudes y formatos.

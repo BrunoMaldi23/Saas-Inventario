@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Icon } from '../components/ui/Icon';
 import { Spinner } from '../components/ui/Spinner';
 import { EmptyState, Notice } from '../components/ui/States';
+import { apiErrorMessage, classifyApiError } from '../lib/apiError';
 import { navigate } from '../lib/router';
 import {
   useAuthenticatedSession,
@@ -12,9 +13,10 @@ import {
 import { roleLabel } from '../session/types';
 
 export function SelectTenantPage() {
-  const session = useAuthenticatedSession();
+  const { user, tenants } = useAuthenticatedSession();
   const { switchTenant, logout } = useSession();
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const select = async (tenantId: string) => {
@@ -23,44 +25,62 @@ export function SelectTenantPage() {
     try {
       await switchTenant(tenantId);
       navigate('/', { replace: true });
-    } catch {
-      setError('No pudimos abrir esa empresa. Inténtalo nuevamente.');
+    } catch (cause) {
+      const kind = classifyApiError(cause);
+      // Con 401 el provider ya volvió al login.
+      if (kind === 'unauthorized') return;
+      setError(
+        kind === 'not-found'
+          ? 'Esa empresa ya no está disponible para tu usuario.'
+          : apiErrorMessage(kind),
+      );
       setPendingId(null);
+    }
+  };
+
+  const signOut = async () => {
+    setLoggingOut(true);
+    setError(null);
+    try {
+      await logout();
+    } catch (cause) {
+      setError(apiErrorMessage(classifyApiError(cause)));
+      setLoggingOut(false);
     }
   };
 
   return (
     <AuthLayout
       title="Elige una empresa"
-      description={`Hola ${session.user.name}, selecciona con qué empresa quieres trabajar.`}
+      description={`Hola ${user.name}, selecciona con qué empresa quieres trabajar.`}
     >
       <div className="form-grid">
         {error && <Notice tone="danger">{error}</Notice>}
-        {session.memberships.length === 0 ? (
+        {tenants.length === 0 ? (
           <EmptyState
             compact
             icon="building"
-            title="No perteneces a ninguna empresa"
-            description="Pide a un administrador que te invite."
+            title="No tienes empresas activas"
+            description="Tu usuario no tiene una membresía activa. Pide a un administrador que te agregue a una empresa."
           />
         ) : (
           <ul className="tenant-options">
-            {session.memberships.map((m) => (
-              <li key={m.tenantId}>
+            {tenants.map((tenant) => (
+              <li key={tenant.id}>
                 <button
                   type="button"
                   className="tenant-option"
-                  disabled={pendingId !== null}
-                  onClick={() => void select(m.tenantId)}
+                  disabled={pendingId !== null || loggingOut}
+                  onClick={() => void select(tenant.id)}
                 >
                   <span className="tenant-switcher__icon" aria-hidden="true">
                     <Icon name="building" size={18} />
                   </span>
                   <span className="tenant-option__text">
-                    <span className="cell-strong">{m.tenantName}</span>
-                    <span className="cell-muted">{roleLabel(m.roleName)}</span>
+                    <span className="cell-strong">{tenant.name}</span>
+                    <span className="cell-muted">{roleLabel(tenant.role)}</span>
                   </span>
-                  {pendingId === m.tenantId ? (
+                  {pendingId === tenant.id ? (
                     <Spinner size={18} />
                   ) : (
                     <Icon
@@ -74,7 +94,13 @@ export function SelectTenantPage() {
             ))}
           </ul>
         )}
-        <Button variant="ghost" icon="logout" onClick={() => void logout()}>
+        <Button
+          variant="ghost"
+          icon="logout"
+          loading={loggingOut}
+          disabled={pendingId !== null}
+          onClick={() => void signOut()}
+        >
           Usar otra cuenta
         </Button>
       </div>

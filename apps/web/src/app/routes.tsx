@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { LoadingState } from '../components/ui/States';
+import { Permission } from '../lib/permissions';
 import { HealthPage } from '../features/health/HealthPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import {
@@ -27,6 +28,8 @@ export type AppRoute = {
   path: string;
   title: string;
   render: () => ReactNode;
+  /** Permiso requerido; sin él se muestra un estado 403 en vez de la página. */
+  permission?: string;
 };
 
 /** Rutas autenticadas, dentro del AppShell. */
@@ -46,7 +49,12 @@ export const appRoutes: AppRoute[] = [
     render: () => <SuppliersPage />,
   },
   { path: '/reportes', title: 'Reportes', render: () => <ReportsPage /> },
-  { path: '/usuarios', title: 'Usuarios', render: () => <UsersPage /> },
+  {
+    path: '/usuarios',
+    title: 'Usuarios',
+    render: () => <UsersPage />,
+    permission: Permission.UsersRead,
+  },
   {
     path: '/configuracion',
     title: 'Configuración',

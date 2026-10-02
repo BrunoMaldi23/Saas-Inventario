@@ -1,9 +1,15 @@
 import type { IconName } from '../components/ui/Icon';
+import { hasPermission, Permission } from '../lib/permissions.ts';
 
 export type NavItem = {
   label: string;
   to: string;
   icon: IconName;
+  /**
+   * Permiso requerido para mostrar el enlace. Los módulos sin permiso
+   * publicado por el backend aún no lo declaran y quedan visibles.
+   */
+  permission?: string;
 };
 
 export type NavGroup = {
@@ -11,11 +17,6 @@ export type NavGroup = {
   items: NavItem[];
 };
 
-/*
- * Navegación principal. Hoy se muestra completa para cualquier sesión: la
- * visibilidad por permiso se aplicará cuando el backend exponga los permisos
- * efectivos del tenant activo (no se infieren permisos en el frontend).
- */
 export const navigation: NavGroup[] = [
   {
     label: 'General',
@@ -41,9 +42,29 @@ export const navigation: NavGroup[] = [
   {
     label: 'Administración',
     items: [
-      { label: 'Usuarios', to: '/usuarios', icon: 'users' },
+      {
+        label: 'Usuarios',
+        to: '/usuarios',
+        icon: 'users',
+        permission: Permission.UsersRead,
+      },
       { label: 'Configuración', to: '/configuracion', icon: 'settings' },
       { label: 'Estado del sistema', to: '/sistema', icon: 'activity' },
     ],
   },
 ];
+
+/** Navegación visible para los permisos del tenant activo; omite grupos vacíos. */
+export function visibleNavigation(
+  groups: NavGroup[],
+  permissions: readonly string[],
+): NavGroup[] {
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) =>
+        hasPermission(permissions, item.permission),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
+}

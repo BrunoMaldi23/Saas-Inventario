@@ -5,10 +5,10 @@ import { ModuleNotice } from '../components/ui/ModuleNotice';
 import { PageHeader } from '../components/ui/PageHeader';
 import { EmptyState } from '../components/ui/States';
 import { Link } from '../lib/router';
-import { useSession } from '../session/SessionProvider';
+import { useActiveTenant } from '../session/SessionProvider';
 
 export function SettingsPage() {
-  const { activeMembership } = useSession();
+  const activeTenant = useActiveTenant();
 
   return (
     <>
@@ -26,11 +26,7 @@ export function SettingsPage() {
           <div className="form-grid">
             <Field label="Nombre de la empresa">
               {(props) => (
-                <Input
-                  {...props}
-                  value={activeMembership?.tenantName ?? ''}
-                  readOnly
-                />
+                <Input {...props} value={activeTenant.name} readOnly />
               )}
             </Field>
             <div className="form-row">

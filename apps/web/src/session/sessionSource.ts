@@ -1,11 +1,18 @@
-import { createMockSessionSource } from './mockSessionSource';
+import {
+  getMe,
+  listTenants,
+  login,
+  logout,
+  selectTenant,
+} from '@inventario/api-client';
+import { createApiSessionSource } from './apiSessionSource';
 import type { SessionSource } from './types';
 
-/*
- * Punto único de conexión de la sesión. Cuando exista la API de autenticación,
- * reemplazar esta línea por una implementación basada en @inventario/api-client
- * y borrar mockSessionSource.ts. Ningún componente importa el mock directamente.
- */
-export const sessionSource: SessionSource = createMockSessionSource();
-
-export const isMockSession = true;
+/** Punto único de conexión de la sesión con la API real. */
+export const sessionSource: SessionSource = createApiSessionSource({
+  getMe,
+  login,
+  logout,
+  listTenants,
+  selectTenant,
+});

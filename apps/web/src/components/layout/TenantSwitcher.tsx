@@ -1,8 +1,10 @@
 import { useCallback, useId, useRef, useState } from 'react';
+import { apiErrorMessage, classifyApiError } from '../../lib/apiError';
 import { cx } from '../../lib/cx';
 import { navigate } from '../../lib/router';
 import { useDismiss } from '../../lib/useDismiss';
 import {
+  useActiveTenant,
   useAuthenticatedSession,
   useSession,
 } from '../../session/SessionProvider';
@@ -11,10 +13,11 @@ import { Icon } from '../ui/Icon';
 import { Spinner } from '../ui/Spinner';
 import { useToast } from '../ui/Toast';
 
-/** Muestra la empresa activa y permite cambiarla si hay varias membresías. */
+/** Muestra la empresa activa y permite cambiarla si hay varias. */
 export function TenantSwitcher() {
-  const session = useAuthenticatedSession();
-  const { activeMembership, switchTenant } = useSession();
+  const { tenants } = useAuthenticatedSession();
+  const activeTenant = useActiveTenant();
+  const { switchTenant } = useSession();
   const { notify } = useToast();
   const [open, setOpen] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -23,21 +26,26 @@ export function TenantSwitcher() {
   const close = useCallback(() => setOpen(false), []);
   useDismiss(ref, open, close);
 
-  if (!activeMembership) return null;
-  const canSwitch = session.memberships.length > 1;
-
   const select = async (tenantId: string, tenantName: string) => {
-    if (tenantId === activeMembership.tenantId) return close();
+    if (tenantId === activeTenant.id) return close();
     setPendingId(tenantId);
     try {
       await switchTenant(tenantId);
-      close();
-      // Volver al inicio evita mostrar vistas cargadas con datos del tenant anterior.
+      // El AppShell se remonta por tenant (ver App.tsx), descartando estado
+      // de datos del tenant anterior; además se vuelve al dashboard.
       navigate('/');
       notify(`Ahora trabajas en ${tenantName}.`, 'info');
-    } catch {
-      notify('No pudimos cambiar de empresa. Inténtalo nuevamente.', 'danger');
-    } finally {
+    } catch (error) {
+      const kind = classifyApiError(error);
+      // 401 ya cerró la sesión en el provider; no hace falta otro aviso.
+      if (kind !== 'unauthorized') {
+        notify(
+          kind === 'not-found'
+            ? 'Esa empresa ya no está disponible para tu usuario.'
+            : apiErrorMessage(kind),
+          'danger',
+        );
+      }
       setPendingId(null);
     }
   };
@@ -48,17 +56,15 @@ export function TenantSwitcher() {
         <Icon name="building" size={16} />
       </span>
       <span className="tenant-switcher__text">
-        <span className="tenant-switcher__name">
-          {activeMembership.tenantName}
-        </span>
+        <span className="tenant-switcher__name">{activeTenant.name}</span>
         <span className="tenant-switcher__role">
-          {roleLabel(activeMembership.roleName)}
+          {roleLabel(activeTenant.role)}
         </span>
       </span>
     </>
   );
 
-  if (!canSwitch) {
+  if (tenants.length <= 1) {
     return <div className="tenant-switcher">{summary}</div>;
   }
 
@@ -84,26 +90,24 @@ export function TenantSwitcher() {
         <div id={menuId} className="popover popover--full">
           <p className="popover__label">Tus empresas</p>
           <ul className="menu-list">
-            {session.memberships.map((membership) => {
-              const active = membership.tenantId === activeMembership.tenantId;
+            {tenants.map((tenant) => {
+              const active = tenant.id === activeTenant.id;
               return (
-                <li key={membership.tenantId}>
+                <li key={tenant.id}>
                   <button
                     type="button"
                     className={cx('menu-item', active && 'is-active')}
                     aria-current={active ? 'true' : undefined}
                     disabled={pendingId !== null}
-                    onClick={() =>
-                      void select(membership.tenantId, membership.tenantName)
-                    }
+                    onClick={() => void select(tenant.id, tenant.name)}
                   >
                     <span className="menu-item__text">
-                      <span>{membership.tenantName}</span>
+                      <span>{tenant.name}</span>
                       <span className="menu-item__meta">
-                        {roleLabel(membership.roleName)}
+                        {roleLabel(tenant.role)}
                       </span>
                     </span>
-                    {pendingId === membership.tenantId ? (
+                    {pendingId === tenant.id ? (
                       <Spinner size={16} />
                     ) : (
                       active && <Icon name="check" size={16} />

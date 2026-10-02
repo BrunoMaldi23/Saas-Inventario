@@ -1,5 +1,4 @@
 import { useEffect, type ReactNode } from 'react';
-import { isMockSession } from '../../session/sessionSource';
 import { Icon } from '../ui/Icon';
 
 type AuthLayoutProps = {
@@ -27,11 +26,6 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
         {description && <p className="auth-card__description">{description}</p>}
         {children}
       </div>
-      {isMockSession && (
-        <p className="auth-layout__footnote">
-          Entorno de demostración: la autenticación aún usa datos simulados.
-        </p>
-      )}
     </main>
   );
 }

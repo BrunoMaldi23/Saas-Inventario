@@ -7,9 +7,13 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { useAuthenticatedSession } from '../session/SessionProvider';
 import { roleLabel } from '../session/types';
 
+const dateTimeFormat = new Intl.DateTimeFormat('es-CL', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+});
+
 export function ProfilePage() {
-  const session = useAuthenticatedSession();
-  const { user } = session;
+  const { user, tenants, activeTenant, expiresAt } = useAuthenticatedSession();
 
   return (
     <>
@@ -24,6 +28,9 @@ export function ProfilePage() {
             <div>
               <p className="profile-summary__name">{user.name}</p>
               <p className="cell-muted">{user.email}</p>
+              <p className="cell-muted">
+                Sesión válida hasta {dateTimeFormat.format(new Date(expiresAt))}
+              </p>
             </div>
           </div>
         </Card>
@@ -34,12 +41,12 @@ export function ProfilePage() {
           flush
         >
           <ul className="membership-list">
-            {session.memberships.map((m) => (
-              <li key={m.tenantId}>
-                <span className="cell-strong">{m.tenantName}</span>
+            {tenants.map((tenant) => (
+              <li key={tenant.id}>
+                <span className="cell-strong">{tenant.name}</span>
                 <span className="membership-list__meta">
-                  <Badge>{roleLabel(m.roleName)}</Badge>
-                  {m.tenantId === session.activeTenantId && (
+                  <Badge>{roleLabel(tenant.role)}</Badge>
+                  {tenant.id === activeTenant?.id && (
                     <Badge tone="info" dot>
                       Activa
                     </Badge>
@@ -48,6 +55,25 @@ export function ProfilePage() {
               </li>
             ))}
           </ul>
+        </Card>
+
+        <Card
+          title="Permisos en la empresa activa"
+          description="Definidos por tu rol. El servidor valida cada operación."
+        >
+          {activeTenant && activeTenant.permissions.length > 0 ? (
+            <ul className="permission-list">
+              {activeTenant.permissions.map((permission) => (
+                <li key={permission}>
+                  <code>{permission}</code>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="cell-muted">
+              Tu rol no tiene permisos administrativos en esta empresa.
+            </p>
+          )}
         </Card>
 
         <Card

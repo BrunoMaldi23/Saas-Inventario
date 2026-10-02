@@ -1,7 +1,8 @@
-import { navigation } from '../../app/navigation';
+import { navigation, visibleNavigation } from '../../app/navigation';
 import { cx } from '../../lib/cx';
 import { isActivePath } from '../../lib/path';
 import { Link, usePathname } from '../../lib/router';
+import { useActiveTenant } from '../../session/SessionProvider';
 import { IconButton } from '../ui/Button';
 import { Icon } from '../ui/Icon';
 import { TenantSwitcher } from './TenantSwitcher';
@@ -14,6 +15,8 @@ type SidebarProps = {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { permissions } = useActiveTenant();
+  const groups = visibleNavigation(navigation, permissions);
 
   return (
     <>
@@ -45,7 +48,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </div>
 
         <nav className="sidebar__nav" aria-label="Principal">
-          {navigation.map((group) => (
+          {groups.map((group) => (
             <div key={group.label} className="nav-group">
               <p className="nav-group__label">{group.label}</p>
               <ul className="nav-group__list">

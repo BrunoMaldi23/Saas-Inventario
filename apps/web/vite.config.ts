@@ -24,7 +24,12 @@ export default defineConfig(() => {
     server: {
       port: webPort,
       strictPort: true,
-      proxy: { '/api': `http://127.0.0.1:${apiPort}` },
+      proxy: {
+        // changeOrigin: false conserva el Host del navegador. La forma corta
+        // ('/api': url) lo reescribe al puerto de la API y el CsrfGuard, que
+        // compara Origin con Host, rechaza todo POST (login incluido) con 403.
+        '/api': { target: `http://127.0.0.1:${apiPort}`, changeOrigin: false },
+      },
     },
   };
 });

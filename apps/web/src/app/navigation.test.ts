@@ -1,0 +1,34 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { navigation, visibleNavigation, type NavGroup } from './navigation.ts';
+
+const labels = (groups: NavGroup[]) =>
+  groups.flatMap((group) => group.items.map((item) => item.label));
+
+describe('visibleNavigation', () => {
+  it('oculta Usuarios sin users:read', () => {
+    assert.ok(!labels(visibleNavigation(navigation, [])).includes('Usuarios'));
+  });
+
+  it('muestra Usuarios con users:read', () => {
+    assert.ok(
+      labels(visibleNavigation(navigation, ['users:read'])).includes(
+        'Usuarios',
+      ),
+    );
+  });
+
+  it('elimina grupos que quedan vacíos', () => {
+    const groups: NavGroup[] = [
+      {
+        label: 'Restringido',
+        items: [{ label: 'X', to: '/x', icon: 'box', permission: 'x:read' }],
+      },
+      { label: 'Libre', items: [{ label: 'Y', to: '/y', icon: 'box' }] },
+    ];
+    assert.deepEqual(
+      visibleNavigation(groups, []).map((g) => g.label),
+      ['Libre'],
+    );
+  });
+});

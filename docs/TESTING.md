@@ -111,6 +111,8 @@ Fase 3:
 
 - CRUD de datos maestros probado.
 - Unicidad por tenant probada.
+- Pruebas HTTP con PostgreSQL real para los seis recursos: lectura, creacion, actualizacion, paginacion, busqueda, filtros, estado inactivo, permisos de lectura/escritura, referencias cruzadas rechazadas y auditoria.
+- Comprobacion de claves repetidas en distintos tenants y bloqueo de ciclos de categorias.
 
 Fase 4:
 

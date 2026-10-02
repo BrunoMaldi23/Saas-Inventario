@@ -74,7 +74,7 @@ Estado: implementada y validada localmente. La ejecucion del workflow en GitHub 
 
 Objetivo: administrar datos maestros del inventario.
 
-Tareas candidatas:
+Tareas ejecutadas:
 
 - Empresas y sucursales.
 - Categorias.
@@ -83,6 +83,8 @@ Tareas candidatas:
 - Bodegas.
 - Busqueda y filtros basicos.
 - Validaciones de unicidad por tenant.
+
+Estado: implementada y validada localmente; la ejecucion del workflow en GitHub queda pendiente de publicar los cambios. No se implementaron saldos ni movimientos de inventario.
 
 ## Fase 4: Inventario y movimientos
 

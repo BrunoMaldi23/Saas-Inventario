@@ -11,6 +11,15 @@ import { AuthController, TenantsController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import { CsrfGuard } from './csrf.guard';
+import { CatalogService } from './catalog.service';
+import {
+  CompaniesController,
+  BranchesController,
+  CategoriesController,
+  ProductsController,
+  SuppliersController,
+  WarehousesController,
+} from './catalog.controller';
 import { DatabaseService } from './database.service';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
@@ -25,12 +34,19 @@ import { TenantGuard } from './tenant.guard';
     RolesController,
     UsersController,
     MembershipsController,
+    CompaniesController,
+    BranchesController,
+    CategoriesController,
+    ProductsController,
+    SuppliersController,
+    WarehousesController,
   ],
   providers: [
     DatabaseService,
     HealthService,
     AuthService,
     AdminService,
+    CatalogService,
     { provide: APP_GUARD, useClass: CsrfGuard },
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: TenantGuard },

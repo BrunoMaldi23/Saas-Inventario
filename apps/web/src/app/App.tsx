@@ -1,6 +1,10 @@
 import { useEffect } from 'react';
 import { AppShell } from '../components/layout/AppShell';
-import { ErrorState, LoadingState } from '../components/ui/States';
+import {
+  ErrorState,
+  ForbiddenState,
+  LoadingState,
+} from '../components/ui/States';
 import { ToastProvider } from '../components/ui/Toast';
 import { navigate, usePathname } from '../lib/router';
 import { LoginPage } from '../pages/LoginPage';
@@ -15,17 +19,18 @@ function Redirect({ to }: { to: string }) {
 }
 
 /*
- * Decide qué mostrar según el estado de sesión. Estas guardas solo ordenan la
- * navegación: la autorización real siempre la aplica el backend.
+ * Decide qué mostrar según el estado de sesión. Cada estado tiene un único
+ * destino posible, por lo que no hay redirecciones en cadena. Estas guardas
+ * solo ordenan la navegación: la autorización real la aplica el backend.
  */
 function Router() {
   const pathname = usePathname();
-  const { state, reload } = useSession();
+  const { state, reload, can } = useSession();
 
   if (state.status === 'loading') {
     return (
       <div className="full-page">
-        <LoadingState label="Cargando sesión…" />
+        <LoadingState label="Verificando sesión…" />
       </div>
     );
   }
@@ -33,7 +38,12 @@ function Router() {
   if (state.status === 'error') {
     return (
       <div className="full-page">
-        <ErrorState description={state.message} onRetry={reload} />
+        <ErrorState
+          icon="wifiOff"
+          title="No pudimos verificar tu sesión"
+          description={state.message}
+          onRetry={reload}
+        />
       </div>
     );
   }
@@ -42,12 +52,13 @@ function Router() {
     return (
       <>
         {pathname !== LOGIN_PATH && <Redirect to={LOGIN_PATH} />}
-        <LoginPage />
+        <LoginPage reason={state.reason} />
       </>
     );
   }
 
-  if (state.session.activeTenantId === null) {
+  const { activeTenant } = state.session;
+  if (activeTenant === null) {
     return (
       <>
         {pathname !== SELECT_TENANT_PATH && (
@@ -63,9 +74,21 @@ function Router() {
   }
 
   const route = appRoutes.find((r) => r.path === pathname);
+  const allowed = route ? can(route.permission) : true;
   return (
-    <AppShell title={route?.title ?? 'Página no encontrada'}>
-      {route ? route.render() : <NotFoundPage />}
+    // key: al cambiar de tenant se remonta todo el árbol y se descarta
+    // cualquier estado de datos del tenant anterior.
+    <AppShell
+      key={activeTenant.id}
+      title={route?.title ?? 'Página no encontrada'}
+    >
+      {!route ? (
+        <NotFoundPage />
+      ) : allowed ? (
+        route.render()
+      ) : (
+        <ForbiddenState />
+      )}
     </AppShell>
   );
 }

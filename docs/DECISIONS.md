@@ -239,3 +239,21 @@ Motivo: mantiene permisos en la base y evita escalacion desde el frontend. La as
 Decision: `SameSite=Lax`, cookie host-only y comprobacion del origen de escrituras en la API, usando el mismo origen web/API. `Secure` se activa en produccion. No se habilita CORS cross-origin en Fase 2.
 
 Motivo: una cookie de sesion requiere proteccion CSRF; la comprobacion de origen complementa `SameSite` sin introducir un servicio ni token adicional en esta fase.
+
+## DEC-019: Catalogo operacional sin borrado fisico
+
+Decision: seis recursos de catalogo usan GET de lista/detalle, POST y PATCH; no exponen DELETE. `INACTIVE` mantiene trazabilidad y unicidad. Los listados incluyen ambos estados por defecto y permiten filtrar. Una nueva referencia o reasignacion solo apunta a padres activos; desactivar un padre no cambia automaticamente sus hijos.
+
+Motivo: evita eliminar referencias necesarias para inventario futuro sin introducir cascadas ni automatismos prematuros.
+
+## DEC-020: Identificadores y cantidades de catalogo
+
+Decision: SKU se normaliza a mayusculas y es unico por tenant; barcode y taxId se conservan como texto y son unicos por tenant cuando existen. Nombres de categorias son unicos entre hermanos, incluidas las raices, mediante indices parciales en PostgreSQL. `minStock` es decimal no negativo de tres decimales y su contrato HTTP usa string; no es saldo actual.
+
+Motivo: evita ambiguedad de `NULL` en categorias raiz y perdida de precision en cantidades, manteniendo contratos simples.
+
+## DEC-021: Permisos de catalogo
+
+Decision: Owner y Admin leen y escriben los seis recursos; Viewer solo lee. InventoryManager escribe categorias, productos, proveedores y bodegas; BranchManager escribe productos, proveedores y bodegas. Los dos roles operativos leen los seis recursos. La migracion asigna estos permisos a tenants existentes; el bootstrap los asigna a tenants nuevos.
+
+Motivo: cubre operaciones iniciales sin crear administracion configurable de roles ni autorizacion por sucursal en esta fase.

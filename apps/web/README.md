@@ -41,16 +41,23 @@ src/
 
 Las guardas en `app/App.tsx` solo ordenan la navegación; la autorización real la aplica el backend.
 
+## Sesión y permisos
+
+- **Sesión real:** `session/apiSessionSource.ts` implementa `SessionSource` sobre `@inventario/api-client` usando `/auth/me`, `/auth/login`, `/auth/logout`, `/tenants` y `/auth/select-tenant`. La cookie es HTTP-only: el frontend no la lee ni guarda tokens.
+- **Tenants:** con una sola empresa se selecciona automáticamente; con varias se muestra `/seleccionar-empresa`. Al cambiar de tenant, el `AppShell` se remonta (`key` = id del tenant), lo que descarta el estado de datos anterior, y se vuelve al dashboard.
+- **Errores:** `lib/apiError.ts` clasifica los errores del cliente. Un 401 lleva al login con aviso de expiración (`useApiQuery` y `expireSession`); un 403 muestra "No tienes permiso"; con el backend caído se muestra un estado de reintento. La sesión se revalida al llegar `expiresAt` y al volver a la pestaña.
+- **Permisos:** la navegación y las acciones se filtran con `activeTenant.permissions` (`lib/permissions.ts`, `app/navigation.ts`, `permission` en `app/routes.tsx`). Nunca se infieren del nombre del rol. El backend sigue siendo la autoridad.
+- **Tipos:** `lib/apiTypes.ts` toma los tipos de `@inventario/types` a través de las firmas de `@inventario/api-client`, porque `apps/web` aún no declara `@inventario/types` como dependencia directa.
+
 ## Mocks (temporales)
 
-| Archivo                            | Reemplazo                                                        |
-| ---------------------------------- | ---------------------------------------------------------------- |
-| `src/session/mockSessionSource.ts` | Implementación de `SessionSource` sobre `@inventario/api-client` |
-| `src/mocks/productsPreview.ts`     | `GET` de productos (Fase 3)                                      |
+| Archivo                        | Reemplazo                   |
+| ------------------------------ | --------------------------- |
+| `src/mocks/productsPreview.ts` | `GET` de productos (Fase 3) |
 
-Para retirar el mock de sesión: cambiar la única línea de `src/session/sessionSource.ts`, poner `isMockSession = false` (oculta los avisos de demo) y borrar el mock y su test. Ningún componente importa el mock directamente.
+## Proxy de desarrollo
 
-El mock acepta cualquier correo válido con contraseña de 8+ caracteres, y su estado vive en memoria (recargar la página restaura la sesión demo).
+`vite.config.ts` proxifica `/api` con `changeOrigin: false`. Es obligatorio: el `CsrfGuard` de la API compara `Origin` con `Host`, y si el proxy reescribe `Host`, todo POST (login incluido) recibe 403.
 
 ## Scripts
 
@@ -61,7 +68,7 @@ pnpm --filter @inventario/web test       # node:test (sin dependencias extra)
 pnpm --filter @inventario/web build
 ```
 
-Los tests usan `node --test` con el type stripping nativo de Node 22: cubren lógica pura (`lib/`, `session/`). Por eso los módulos que importan los tests usan imports con extensión `.ts`.
+Los tests usan `node --test` con el type stripping nativo de Node 22: cubren lógica pura (`lib/`, `session/`, `app/navigation.ts`); la sesión se prueba con un cliente falso inyectado. Por eso los módulos que importan los tests usan imports con extensión `.ts`.
 
 ## Convenciones
 

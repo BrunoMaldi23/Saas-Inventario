@@ -7,8 +7,8 @@ import { ServiceStatusBadge } from '../features/health/ServiceStatusBadge';
 import { useSystemHealth } from '../features/health/useSystemHealth';
 import { Link } from '../lib/router';
 import {
+  useActiveTenant,
   useAuthenticatedSession,
-  useSession,
 } from '../session/SessionProvider';
 
 function firstName(name: string) {
@@ -17,14 +17,14 @@ function firstName(name: string) {
 
 export function DashboardPage() {
   const { user } = useAuthenticatedSession();
-  const { activeMembership } = useSession();
+  const activeTenant = useActiveTenant();
   const health = useSystemHealth();
 
   return (
     <>
       <PageHeader
         title={`Hola, ${firstName(user.name)}`}
-        description={`Resumen operativo de ${activeMembership?.tenantName ?? 'tu empresa'}.`}
+        description={`Resumen operativo de ${activeTenant.name}.`}
       />
 
       <div className="stack">

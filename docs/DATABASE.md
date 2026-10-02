@@ -22,6 +22,12 @@ Definir un modelo conceptual inicial para PostgreSQL que soporte multi-tenancy, 
 
 `SystemMetadata` permanece global y tecnica. No se crean entidades comerciales en esta fase. La preparacion conceptual por sucursal sigue pendiente y no se agregan campos de sucursal sin flujo real.
 
+## Modelos implementados en Fase 3
+
+`Company`, `Branch`, `Category`, `Product`, `Supplier` y `Warehouse` tienen UUID, `tenantId`, `status`, `createdAt` y `updatedAt`. No hay borrado HTTP: `INACTIVE` conserva los registros y sus claves unicas. Los listados incluyen ambos estados por defecto y aceptan filtro de estado. Una nueva relacion, o una reasignacion, solo puede apuntar a un registro activo del mismo tenant; desactivar un padre no cambia automaticamente el estado de los hijos ya existentes.
+
+La migracion `20261002140355_operational_catalog` agrega claves foraneas compuestas `(id, tenantId)` para Company→Branch, Category→Category/Product y Branch→Warehouse. SKU y barcode son unicos por tenant cuando existen; SKU se normaliza a mayusculas. `Company.taxId` es unico por tenant cuando existe; `Warehouse.name` es unico por tenant y sucursal. Dos indices parciales de PostgreSQL hacen unico `Category.name` entre raices del mismo tenant y entre hijos del mismo padre. Los nombres son sensibles a mayusculas para unicidad. `Product.minStock` es decimal no negativo de precision 18,3 y se comunica como string; no representa stock actual. La migracion agrega permisos del catalogo a roles de tenants existentes.
+
 ## Entidades conceptuales
 
 ### Tenant
