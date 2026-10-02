@@ -102,3 +102,28 @@ La paginación de catálogos, balances, movimientos y transferencias usa `{ item
 Owner, Admin e InventoryManager tienen los cuatro permisos. BranchManager tiene lectura, escritura y transferencia, sin ajuste. Viewer solo lectura. Un producto, bodega o padre operativo inactivo no puede usarse en nuevas operaciones. Errores principales: 400 payload o query inválidos; 401 sin sesión; 403 sin tenant o permiso; 404 producto/bodega/transferencia no visible; 409 stock insuficiente o stock inicial ya existente. Los permisos nunca se toman del frontend.
 
 `@inventario/types`, `@inventario/validation` y `@inventario/api-client` exportan estos contratos y funciones `listInventory`, `listMovements`, `recordInitialStock`, `recordEntry`, `recordIssue`, `recordAdjustment`, `listTransfers`, `getTransfer` y `createTransfer`.
+
+## Reportes básicos (Fase 5)
+
+Todas las rutas requieren sesión, tenant activo y `reports:read`. El tenant se toma del contexto autenticado; las queries rechazan `tenantId`. Owner, Admin, InventoryManager, BranchManager y Viewer tienen solo lectura de reportes en el alcance completo del tenant.
+
+| Método y ruta | Query | Respuesta |
+| --- | --- | --- |
+| `GET /reports/dashboard` | `from?`, `to?` | `DashboardReport` |
+| `GET /reports/stock` | `page?`, `pageSize?`, `productId?`, `warehouseId?`, `search?` | `CatalogPage<InventoryBalanceView>` |
+| `GET /reports/low-stock` | `page?`, `pageSize?`, `search?` | `CatalogPage<LowStockProductView>` |
+| `GET /reports/movements` | `page?`, `pageSize?`, `from?`, `to?`, `productId?`, `warehouseId?`, `type?`, `createdByUserId?` | `MovementReport` |
+| `GET /reports/warehouses` | `page?`, `pageSize?`, `search?`, `status?` | `CatalogPage<WarehouseReportView>` |
+| `GET /reports/products` | `page?`, `pageSize?`, `search?`, `status?` | `CatalogPage<ProductReportView>` |
+
+Todos los listados usan `{ items, page, pageSize, total, totalPages }`, `page=1`, `pageSize=20` y máximo 100. `totalPages` es cero cuando no hay resultados. La búsqueda es parcial e insensible a mayúsculas; status filtra `ACTIVE` o `INACTIVE`. Stock actual conserva saldos de productos/bodegas inactivos y permite filtrar por sus IDs. Los resúmenes de productos y bodegas incluyen su status; las cantidades actuales por producto se suman solo a través de sus bodegas (mismo producto y unidad).
+
+`LowStockProductView` contiene `{ product: { id, name, sku, unitOfMeasure, category }, locations: [{ warehouse: { id, name }, quantity, minStock }], warehouseCount }`. Solo cuenta productos, bodegas, sucursales y empresas activos con saldo existente y `quantity <= minStock`; productos sin balance no aparecen. Dashboard entrega máximo diez productos bajo mínimo por nombre y también los conteos totales de productos y saldos bajo mínimo.
+
+`WarehouseReportView` contiene `{ id, name, status, branch: { id, name }, balanceCount, productCount, lowStockBalanceCount }`. No suma cantidades de unidades distintas. `ProductReportView` contiene `{ id, name, sku, status, unitOfMeasure, category, totalOnHand, warehouseCount, lowStockWarehouseCount }`.
+
+`MovementReport` contiene la página de movimientos con referencias `{ product: { id, name, sku }, warehouse: { id, name }, actor: { id, name } }` y `totalsByUnit: [{ unitOfMeasure, direction, quantity, count }]`. Los movimientos agregados usan la unidad actual del producto y cantidades decimales exactas; no se combinan unidades distintas. Una transferencia cuenta como salida en origen y entrada en destino, como dos movimientos.
+
+`DashboardReport` expone `generatedAt`, `todayRange`, `periodRange`, `activeProductCount`, `activeWarehouseCount`, `lowStockProductCount`, `lowStockBalanceCount`, `todayMovementCount`, `periodTotalsByUnit`, `recentMovements` y `lowStockProducts`. “Hoy” es el día calendario UTC desde `00:00:00.000Z` hasta `generatedAt`; no depende del reloj del navegador. Si no se envía rango, el período del dashboard es ese mismo día UTC. `from` y `to` deben enviarse juntos, como fechas ISO 8601 con zona, y ambos extremos son inclusivos. Para movimientos sin rango, `totalsByUnit` resume todo el historial filtrado.
+
+Tipos, esquemas y funciones `getDashboardReport`, `listStockReport`, `listLowStockReport`, `listMovementReport`, `listWarehouseReport` y `listProductReport` se exportan desde `@inventario/types`, `@inventario/validation` y `@inventario/api-client`.

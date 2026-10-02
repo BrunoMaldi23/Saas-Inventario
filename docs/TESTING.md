@@ -133,3 +133,7 @@ Fase 4:
 ## Fase 4.1
 
 Se prueban statuses HTTP en `ApiError`, error de red, change-password tipado, alta de membership por email y duplicación, permisos, paginación `totalPages` y referencias resumidas en catálogo, movimientos y transferencias. Las pruebas de integración de API usan PostgreSQL real y verifican que los resúmenes respeten el tenant.
+
+## Fase 5
+
+La suite de reportes usa PostgreSQL y prueba dashboard/UTC, saldos decimales, bajo mínimo con catálogo inactivo, entradas/salidas y límites inclusivos, filtros producto/bodega, paginación, resúmenes por producto/bodega, roles de solo lectura, tenant A/B y tenant vacío.

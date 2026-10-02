@@ -1,4 +1,5 @@
 export type HealthResponse = { status: 'ok' };
+export * from './reports.js';
 export type DatabaseHealthResponse = { status: 'ok' | 'error' };
 
 export type AccountStatus = 'ACTIVE' | 'INACTIVE';

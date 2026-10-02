@@ -286,3 +286,15 @@ Motivo: el frontend requiere distinguir estados y presentar nombres sin derivarl
 Decision: `POST /memberships/by-email` permite a quien tiene `memberships:manage` asociar un usuario activo usando coincidencia exacta de email normalizada. La ruta requiere tenant activo, no ofrece listado ni búsqueda parcial, responde 404 para usuarios ausentes/inactivos y 409 para membresías duplicadas, y audita el alta. No se implementan invitaciones.
 
 Motivo: permite el flujo de administración frontend sin publicar un directorio global de usuarios.
+
+## DEC-027: Reportes operacionales y rangos de tiempo
+
+Decision: “hoy” en dashboard significa desde medianoche UTC hasta `generatedAt` calculado en backend. Un período explícito exige `from` y `to` ISO 8601 con zona; sus límites son inclusivos. Sin período, dashboard usa el día UTC actual. Cantidades agregadas se agrupan por unidad de medida; el resumen de producto agrega entre bodegas del mismo producto. La alerta de stock bajo solo incluye balances existentes de producto, bodega, sucursal y empresa activos.
+
+Motivo: evita depender del huso del navegador, comparar magnitudes incompatibles o presentar como accionables registros desactivados.
+
+## DEC-028: Permiso de lectura para reportes
+
+Decision: las rutas usan `reports:read` para los cinco roles iniciales, siempre dentro del tenant activo. Se agrega permiso por migración de datos a roles existentes y bootstrap a nuevos tenants; no se añade permiso por sucursal.
+
+Motivo: los reportes son de lectura y deben estar disponibles en el alcance del tenant con el RBAC actual.

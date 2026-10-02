@@ -111,12 +111,16 @@ Estado: implementada y validada localmente. Publica `ApiError`, los contratos ti
 
 Objetivo: entregar visibilidad operacional.
 
-Tareas candidatas:
+Tareas ejecutadas:
 
 - Reporte de stock actual.
+- Productos bajo stock minimo.
 - Reporte de movimientos por periodo.
-- Reporte de productos bajo minimo.
-- Exportacion simple si se justifica.
+- Resumenes de movimientos por direccion y unidad de medida.
+- Resumenes por producto y bodega.
+- Dashboard con metricas actuales y actividad reciente.
+
+Estado: implementada y validada localmente. No se agregaron tablas materializadas, indices dedicados ni exportaciones. Compras y ventas permanecen fuera de alcance.
 
 ## Fase 6: Especializacion por rubro
 

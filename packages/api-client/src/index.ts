@@ -40,6 +40,16 @@ import type {
   SelectTenantRequest,
   TenantsResponse,
   UserSummary,
+  DashboardReport,
+  LowStockReport,
+  MovementReport,
+  ProductReport,
+  ReportCatalogQuery,
+  ReportDateQuery,
+  ReportMovementQuery,
+  StockReport,
+  StockReportQuery,
+  WarehouseReport,
 } from '@inventario/types';
 import {
   catalogPageSchema,
@@ -63,6 +73,12 @@ import {
   rolesResponseSchema,
   tenantsResponseSchema,
   userSummarySchema,
+  dashboardReportSchema,
+  lowStockReportSchema,
+  movementReportSchema,
+  productReportSchema,
+  stockReportSchema,
+  warehouseReportSchema,
 } from '@inventario/validation';
 
 async function requestJson(
@@ -498,5 +514,65 @@ export async function createTransfer(
 ): Promise<StockTransferResponse> {
   return stockTransferResponseSchema.parse(
     await requestJson('/api/v1/transfers', 'POST', input),
+  );
+}
+
+function reportPath(
+  path: string,
+  query: Record<string, string | number | undefined> = {},
+): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined) params.set(key, String(value));
+  }
+  const suffix = params.toString();
+  return suffix ? `${path}?${suffix}` : path;
+}
+
+export async function getDashboardReport(
+  query: ReportDateQuery = {},
+): Promise<DashboardReport> {
+  return dashboardReportSchema.parse(
+    await requestJson(reportPath('/api/v1/reports/dashboard', query)),
+  );
+}
+
+export async function listStockReport(
+  query: StockReportQuery = {},
+): Promise<StockReport> {
+  return stockReportSchema.parse(
+    await requestJson(reportPath('/api/v1/reports/stock', query)),
+  );
+}
+
+export async function listLowStockReport(
+  query: Pick<StockReportQuery, 'page' | 'pageSize' | 'search'> = {},
+): Promise<LowStockReport> {
+  return lowStockReportSchema.parse(
+    await requestJson(reportPath('/api/v1/reports/low-stock', query)),
+  );
+}
+
+export async function listMovementReport(
+  query: ReportMovementQuery = {},
+): Promise<MovementReport> {
+  return movementReportSchema.parse(
+    await requestJson(reportPath('/api/v1/reports/movements', query)),
+  );
+}
+
+export async function listWarehouseReport(
+  query: ReportCatalogQuery = {},
+): Promise<WarehouseReport> {
+  return warehouseReportSchema.parse(
+    await requestJson(reportPath('/api/v1/reports/warehouses', query)),
+  );
+}
+
+export async function listProductReport(
+  query: ReportCatalogQuery = {},
+): Promise<ProductReport> {
+  return productReportSchema.parse(
+    await requestJson(reportPath('/api/v1/reports/products', query)),
   );
 }

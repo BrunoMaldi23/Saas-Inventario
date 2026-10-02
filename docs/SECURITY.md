@@ -134,3 +134,9 @@ Auditoria funcional:
 - Alertas ante actividad sospechosa.
 - Backups y restauracion probada.
 
+## Reportes operacionales (Fase 5)
+
+- Todas las rutas exigen `reports:read`, sesión y tenant activo. El servicio recibe el tenant resuelto por el guard y ninguna query acepta `tenantId`.
+- Cada query raw es parametrizada y une entidades usando `tenantId`; no devuelve referencias de otro tenant.
+- Los cinco roles iniciales reciben únicamente lectura de reportes en el tenant actual. BranchManager aún no tiene scope por sucursal.
+

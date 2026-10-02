@@ -91,7 +91,12 @@ export const appRoutes: AppRoute[] = [
     render: () => <SuppliersPage />,
     permission: Permission.SuppliersRead,
   },
-  { path: '/reportes', title: 'Reportes', render: () => <ReportsPage /> },
+  {
+    path: '/reportes',
+    title: 'Reportes',
+    render: () => <ReportsPage />,
+    permission: Permission.ReportsRead,
+  },
   {
     path: '/usuarios',
     title: 'Usuarios',

@@ -34,7 +34,7 @@ src/
 | `/empresas`            | Empresas (`companies:read`)        |
 | `/sucursales`          | Sucursales (`branches:read`)       |
 | `/proveedores`         | Proveedores (`suppliers:read`)     |
-| `/reportes`            | Reportes                           |
+| `/reportes`            | Reportes (`reports:read`)          |
 | `/usuarios`            | Usuarios (`users:read`)            |
 | `/configuracion`       | Configuración                      |
 | `/perfil`              | Mi perfil                          |
@@ -70,6 +70,14 @@ Las guardas en `app/App.tsx` solo ordenan la navegación; la autorización real 
 - **Validación:** `features/inventory/inventoryLogic.ts` (cantidades decimales exactas con BigInt, ajuste con motivo, transferencia con origen distinto del destino).
 - **Productos:** `ProductPicker` busca en el servidor, sin cargar el catálogo completo.
 
+## Reportes (Fase 5)
+
+- **Dashboard:** una sola consulta a `GET /reports/dashboard`. "Hoy" lo define el servidor (día UTC); para "Hoy" no se envía rango. Los períodos de 7 y 30 días se envían como días UTC.
+- **Pantalla `/reportes`:** pestañas Stock actual, Bajo mínimo, Movimientos, Por bodega y Por producto, cada una con su endpoint de `/reports` y paginación del backend.
+- **Fechas:** `features/reports/reportLogic.ts` arma `from`/`to` siempre juntos, como días UTC completos (00:00:00.000Z a 23:59:59.999Z, inclusivos). Las fechas de los reportes se muestran en UTC.
+- **Unidades:** `groupTotalsByUnit` presenta `totalsByUnit` / `periodTotalsByUnit` con una fila por unidad. Nunca se suman unidades distintas.
+- **Bajo mínimo:** la selección la hace el backend; la UI no recalcula el criterio.
+
 ## Contratos de Fase 4.1
 
 - Errores: `lib/apiError.ts` traduce `ApiError.status` (0 = red) a un tipo de error de UI. No se interpreta el texto de los mensajes.
@@ -78,7 +86,7 @@ Las guardas en `app/App.tsx` solo ordenan la navegación; la autorización real 
 
 ## Mocks
 
-No quedan mocks: todas las pantallas con datos usan la API real. Inventario, Movimientos y Reportes siguen siendo pantallas en preparación, sin datos.
+No quedan mocks: todas las pantallas con datos usan la API real.
 
 ## Proxy de desarrollo
 

@@ -1,52 +1,94 @@
-import { Button } from '../components/ui/Button';
-import { Icon, type IconName } from '../components/ui/Icon';
-import { ModuleNotice } from '../components/ui/ModuleNotice';
+import { useId, useRef, useState, type KeyboardEvent } from 'react';
+import { Card } from '../components/ui/Card';
 import { PageHeader } from '../components/ui/PageHeader';
+import { LowStockReportTab } from '../features/reports/LowStockReportTab';
+import { MovementReportTab } from '../features/reports/MovementReportTab';
+import { StockReportTab } from '../features/reports/StockReportTab';
+import {
+  ProductReportTab,
+  WarehouseReportTab,
+} from '../features/reports/SummaryReportTabs';
+import { cx } from '../lib/cx';
 
-/** Reportes definidos para la Fase 5 en docs/BACKLOG.md. */
-const reports: Array<{ title: string; description: string; icon: IconName }> = [
+const tabs = [
+  { key: 'stock', label: 'Stock actual', render: () => <StockReportTab /> },
+  { key: 'low', label: 'Bajo mínimo', render: () => <LowStockReportTab /> },
   {
-    title: 'Stock actual',
-    description: 'Existencias por producto y bodega a la fecha.',
-    icon: 'layers',
+    key: 'movements',
+    label: 'Movimientos',
+    render: () => <MovementReportTab />,
   },
   {
-    title: 'Movimientos por período',
-    description:
-      'Entradas, salidas, ajustes y transferencias en un rango de fechas.',
-    icon: 'movements',
+    key: 'warehouses',
+    label: 'Por bodega',
+    render: () => <WarehouseReportTab />,
   },
   {
-    title: 'Productos bajo mínimo',
-    description: 'Productos cuyo stock está por debajo del umbral definido.',
-    icon: 'alertTriangle',
+    key: 'products',
+    label: 'Por producto',
+    render: () => <ProductReportTab />,
   },
-];
+] as const;
 
+type TabKey = (typeof tabs)[number]['key'];
+
+/** Reportes de Fase 5: cada pestaña consulta su endpoint de /reports. */
 export function ReportsPage() {
+  const [active, setActive] = useState<TabKey>('stock');
+  const baseId = useId();
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const current = tabs.find((t) => t.key === active) ?? tabs[0];
+
+  // Navegación con flechas entre pestañas (patrón ARIA tabs).
+  const onKeyDown = (event: KeyboardEvent, index: number) => {
+    const delta =
+      event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+    if (!delta) return;
+    event.preventDefault();
+    const next = (index + delta + tabs.length) % tabs.length;
+    const tab = tabs[next];
+    if (!tab) return;
+    setActive(tab.key);
+    tabRefs.current[next]?.focus();
+  };
+
   return (
     <>
       <PageHeader
         title="Reportes"
-        description="Visibilidad operacional de stock y movimientos."
+        description="Visibilidad de stock y movimientos calculada por el servidor. Las fechas se expresan en UTC."
       />
-      <div className="stack">
-        <ModuleNotice phase={5} />
-        <ul className="report-grid">
-          {reports.map((report) => (
-            <li key={report.title} className="report-card">
-              <span className="report-card__icon">
-                <Icon name={report.icon} size={20} />
-              </span>
-              <h2 className="report-card__title">{report.title}</h2>
-              <p className="report-card__description">{report.description}</p>
-              <Button size="sm" icon="chart" disabled>
-                Generar
-              </Button>
-            </li>
+      <Card flush>
+        <div className="tabs" role="tablist" aria-label="Reportes">
+          {tabs.map((tab, index) => (
+            <button
+              key={tab.key}
+              ref={(element) => {
+                tabRefs.current[index] = element;
+              }}
+              type="button"
+              role="tab"
+              id={`${baseId}-tab-${tab.key}`}
+              aria-selected={tab.key === active}
+              aria-controls={`${baseId}-panel`}
+              tabIndex={tab.key === active ? 0 : -1}
+              className={cx('tab', tab.key === active && 'is-active')}
+              onClick={() => setActive(tab.key)}
+              onKeyDown={(event) => onKeyDown(event, index)}
+            >
+              {tab.label}
+            </button>
           ))}
-        </ul>
-      </div>
+        </div>
+        <div
+          id={`${baseId}-panel`}
+          role="tabpanel"
+          aria-labelledby={`${baseId}-tab-${current.key}`}
+        >
+          {/* key: cada pestaña parte con sus filtros y datos propios. */}
+          <div key={current.key}>{current.render()}</div>
+        </div>
+      </Card>
     </>
   );
 }

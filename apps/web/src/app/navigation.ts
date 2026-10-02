@@ -93,7 +93,14 @@ export const navigation: NavGroup[] = [
   },
   {
     label: 'Análisis',
-    items: [{ label: 'Reportes', to: '/reportes', icon: 'chart' }],
+    items: [
+      {
+        label: 'Reportes',
+        to: '/reportes',
+        icon: 'chart',
+        permission: Permission.ReportsRead,
+      },
+    ],
   },
   {
     label: 'Administración',

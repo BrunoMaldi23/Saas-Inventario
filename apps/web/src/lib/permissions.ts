@@ -25,6 +25,7 @@ export const Permission = {
   InventoryWrite: 'inventory:write',
   InventoryAdjust: 'inventory:adjust',
   InventoryTransfer: 'inventory:transfer',
+  ReportsRead: 'reports:read',
 } as const;
 
 /** Sin permiso requerido el elemento es visible para cualquier sesión. */

@@ -30,6 +30,8 @@ import {
   InventoryController,
   TransfersController,
 } from './inventory.controller';
+import { ReportsController } from './reports.controller';
+import { ReportsService } from './reports.service';
 
 @Module({
   controllers: [
@@ -47,6 +49,7 @@ import {
     WarehousesController,
     InventoryController,
     TransfersController,
+    ReportsController,
   ],
   providers: [
     DatabaseService,
@@ -55,6 +58,7 @@ import {
     AdminService,
     CatalogService,
     InventoryService,
+    ReportsService,
     { provide: APP_GUARD, useClass: CsrfGuard },
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: TenantGuard },

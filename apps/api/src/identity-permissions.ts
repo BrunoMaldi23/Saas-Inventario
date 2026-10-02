@@ -15,6 +15,7 @@ const CATALOG_WRITE = [
   'warehouses:write',
 ] as const;
 const INVENTORY_READ = 'inventory:read' as const;
+const REPORTS_READ = 'reports:read' as const;
 const INVENTORY_WRITE = [
   'inventory:write',
   'inventory:adjust',
@@ -29,6 +30,7 @@ export const ROLE_PERMISSIONS = {
     ...CATALOG_READ,
     ...CATALOG_WRITE,
     INVENTORY_READ,
+    REPORTS_READ,
     ...INVENTORY_WRITE,
   ],
   Admin: [
@@ -38,6 +40,7 @@ export const ROLE_PERMISSIONS = {
     ...CATALOG_READ,
     ...CATALOG_WRITE,
     INVENTORY_READ,
+    REPORTS_READ,
     ...INVENTORY_WRITE,
   ],
   InventoryManager: [
@@ -47,6 +50,7 @@ export const ROLE_PERMISSIONS = {
     'suppliers:write',
     'warehouses:write',
     INVENTORY_READ,
+    REPORTS_READ,
     ...INVENTORY_WRITE,
   ],
   BranchManager: [
@@ -55,10 +59,11 @@ export const ROLE_PERMISSIONS = {
     'suppliers:write',
     'warehouses:write',
     INVENTORY_READ,
+    REPORTS_READ,
     'inventory:write',
     'inventory:transfer',
   ],
-  Viewer: [...CATALOG_READ, INVENTORY_READ],
+  Viewer: [...CATALOG_READ, INVENTORY_READ, REPORTS_READ],
 } as const;
 
 export const CATALOG_PERMISSION_KEYS = [...CATALOG_READ, ...CATALOG_WRITE];

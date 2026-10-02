@@ -47,3 +47,21 @@ describe('navegación de inventario', () => {
     assert.ok(!items.includes('Movimientos'));
   });
 });
+
+describe('navegación de reportes', () => {
+  it('reports:read muestra Reportes', () => {
+    assert.ok(
+      labels(visibleNavigation(navigation, ['reports:read'])).includes(
+        'Reportes',
+      ),
+    );
+  });
+
+  it('sin reports:read se oculta (no se infiere por rol)', () => {
+    assert.ok(
+      !labels(
+        visibleNavigation(navigation, ['inventory:read', 'products:read']),
+      ).includes('Reportes'),
+    );
+  });
+});

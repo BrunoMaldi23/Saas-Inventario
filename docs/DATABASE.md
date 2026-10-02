@@ -300,3 +300,7 @@ Campos conceptuales:
 - Documentos comerciales.
 - Configuracion por tenant para permitir stock negativo.
 - Asignaciones y permisos por sucursal.
+
+## Reportes (Fase 5)
+
+Los reportes consultan y agregan los datos operacionales existentes. No se agregan tablas materializadas, modelos Prisma ni índices nuevos en esta fase. La migración `20261002170000_reports_read_permission` solo registra el permiso `reports:read` y lo asigna a los roles base existentes.

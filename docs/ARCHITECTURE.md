@@ -183,3 +183,7 @@ Reglas:
 ## Endurecimiento de contratos (Fase 4.1)
 
 Las respuestas de catálogo, movimientos y transferencias agregan resúmenes de relaciones mediante `include/select` en la misma consulta Prisma, manteniendo el filtro de tenant de la entidad principal y sin cargas N+1. Los listados mantienen los campos de paginación existentes y agregan `totalPages`. `@inventario/api-client` centraliza los errores HTTP en `ApiError` con status numérico; una falla de red usa status 0. La API permite asociar por email exacto un usuario activo existente a un tenant solo con `memberships:manage`; no ofrece directorio ni búsqueda parcial.
+
+## Reportes operacionales (Fase 5)
+
+`ReportsService` sirve dashboard, balances, bajo mínimo, movimientos y resúmenes por producto/bodega. Los listados se paginan en PostgreSQL y usan `groupBy` o SQL agregado parametrizado; las referencias se cargan en una consulta por página y con selección limitada. Las cantidades de movimientos se agregan por unidad de medida; no se suman saldos de productos distintos. No se crean tablas materializadas ni índices específicos de reportes. El rango “hoy” del dashboard se calcula en UTC en el backend.
