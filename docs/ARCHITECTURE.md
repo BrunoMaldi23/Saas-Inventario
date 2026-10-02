@@ -1,0 +1,160 @@
+# Arquitectura
+
+## Objetivo arquitectonico
+
+Construir un monorepo simple, modular y preparado para crecer, sin introducir complejidad prematura. La primera implementacion debe priorizar claridad, aislamiento multi-tenant y trazabilidad de inventario.
+
+## Stack propuesto
+
+- Monorepo: pnpm y Turborepo.
+- Backend: NestJS, TypeScript, REST API.
+- Frontend: React, Vite, TypeScript.
+- Base de datos: PostgreSQL.
+- ORM: Prisma.
+- Validacion: DTOs y Zod donde aporte valor.
+- Testing: Jest o Vitest segun aplicacion, Playwright para E2E web.
+- Contenedores: Docker y Docker Compose cuando se inicie implementacion.
+- Cache y jobs: Redis solo si aparece una necesidad real.
+
+## Estructura objetivo
+
+```text
+InventarioSaaS/
+  apps/
+    api/
+    web/
+    worker/
+  packages/
+    types/
+    validation/
+    config/
+    api-client/
+  docs/
+  infrastructure/
+```
+
+Durante Fase 0 no se crean aplicaciones ni paquetes. Esta estructura es una guia para fases posteriores.
+
+## Principios de diseno
+
+- Modularidad por dominio funcional.
+- Controladores delgados y logica de negocio en servicios.
+- REST API inicialmente, evitando GraphQL hasta que exista una necesidad clara.
+- Un solo backend modular antes de considerar microservicios.
+- Dependencias compartidas solo cuando reduzcan duplicacion real.
+- Todo dato comercial debe estar aislado por tenant.
+- El tenant se obtiene desde el contexto autenticado, no desde valores libres enviados por el frontend.
+
+## Capas propuestas
+
+- UI web: pantallas, formularios, estados de carga, errores y navegacion.
+- API: controladores, guards, validacion, autorizacion y serializacion.
+- Servicios de dominio: reglas de negocio por modulo.
+- Acceso a datos: Prisma como capa de persistencia.
+- Base de datos: PostgreSQL con restricciones, indices y relaciones claras.
+
+## Modulos backend iniciales
+
+- AuthModule.
+- TenantsModule.
+- CompaniesModule.
+- BranchesModule.
+- UsersModule.
+- RolesModule.
+- ProductsModule.
+- CategoriesModule.
+- SuppliersModule.
+- WarehousesModule.
+- InventoryModule.
+- StockMovementsModule.
+- AlertsModule.
+- ReportsModule.
+- AuditModule.
+
+## Multi-tenancy
+
+Modelo recomendado inicial: base de datos compartida con columna `tenantId` en todas las tablas comerciales.
+
+Motivos:
+
+- Es simple para una primera version SaaS.
+- Reduce costo operativo inicial.
+- Permite mantener un unico esquema.
+- Facilita reportes internos por tenant con controles estrictos.
+
+Reglas obligatorias:
+
+- Toda entidad comercial debe tener `tenantId`.
+- Toda consulta sensible debe filtrar por `tenantId`.
+- Toda escritura debe asignar `tenantId` desde el usuario autenticado.
+- No se debe aceptar `tenantId` arbitrario desde el frontend para operar datos comerciales.
+- Las restricciones unicas deben estar scoped por `tenantId`.
+- El superadmin SaaS debe usar flujos separados y auditados.
+
+## Estrategia de autenticacion
+
+La primera version debe usar autenticacion propia simple:
+
+- Email y password.
+- Password minimo de 8 caracteres.
+- Password hasheado con Argon2id.
+- Sesion web mediante cookies HTTP-only.
+- Cookies `Secure` en produccion y `SameSite` adecuado al flujo web.
+- Sin OAuth ni proveedores externos inicialmente.
+- Refresh token solo si se justifica por experiencia de usuario y manteniendo cookies HTTP-only.
+- Recuperacion de password en fase posterior si no bloquea el MVP.
+
+La sesion debe identificar al usuario y el tenant activo. Un usuario puede pertenecer a multiples tenants mediante `TenantMembership`, pero cada operacion debe ejecutarse bajo un tenant activo claramente definido. El backend debe resolver permisos desde datos confiables del servidor.
+
+## Estrategia RBAC
+
+RBAC inicial por roles predefinidos:
+
+- Owner: control total del tenant.
+- Admin: administra operacion, usuarios y configuracion no critica.
+- InventoryManager: administra productos, stock y movimientos.
+- BranchManager: opera una o mas sucursales asignadas.
+- Viewer: lectura de datos permitidos.
+
+Los permisos deben expresarse como acciones por modulo, por ejemplo `products:create`, `inventory:adjust` o `users:invite`.
+
+El control inicial por sucursal sera basico y se apoyara primero en el tenant activo. El modelo debe permitir asignaciones por sucursal en una fase posterior, sin implementar RBAC complejo por sucursal en el inicio.
+
+## Inventario y trazabilidad
+
+El stock actual debe derivar de movimientos registrados y mantenerse como saldo operacional para consultas rapidas. Cada cambio de stock debe generar un movimiento auditable.
+
+Tipos iniciales de movimiento:
+
+- InitialStock.
+- PurchaseReceipt.
+- SaleIssue.
+- ManualAdjustment.
+- TransferOut.
+- TransferIn.
+- StockCountCorrection.
+
+Reglas:
+
+- No modificar stock sin movimiento asociado.
+- Prohibir stock negativo por defecto.
+- Preparar la arquitectura para que el stock negativo pueda ser configurable por tenant en una fase futura, sin implementar aun esa configuracion.
+- Los ajustes requieren motivo.
+- Las transferencias generan salida en origen y entrada en destino.
+- Los movimientos deben guardar usuario, fecha, producto, bodega, cantidad, tipo y referencia opcional.
+- Las cantidades deben usar convencion clara de signos o campos de entrada/salida, definida antes de implementar.
+
+## Riesgos tecnicos
+
+- Fugas de datos entre tenants por filtros incompletos.
+- Modelo de inventario demasiado simple para rubros con lotes, series o vencimientos.
+- Permisos insuficientemente granulares para empresas con varias sucursales.
+- Reportes lentos si no se definen indices desde el inicio.
+- Acoplar reglas especificas de rubro al nucleo comun.
+- Subestimar auditoria para ajustes de stock.
+
+## Decisiones pendientes
+
+- Convencion final de cantidades en movimientos: signo unico o campos de direccion.
+- Recuperacion de password en MVP o fase posterior.
+- Mecanismo futuro de activacion de modulos especializados por rubro.
