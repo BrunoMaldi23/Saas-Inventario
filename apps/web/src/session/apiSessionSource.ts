@@ -3,7 +3,7 @@ import type {
   LoginRequest,
   SelectTenantRequest,
   TenantsResponse,
-} from '../lib/apiTypes.ts';
+} from '@inventario/types';
 import { classifyApiError } from '../lib/apiError.ts';
 import type { Session, SessionSource } from './types.ts';
 

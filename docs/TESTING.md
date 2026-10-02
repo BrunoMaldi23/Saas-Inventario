@@ -129,3 +129,7 @@ Fase 4:
 - No cubrir permisos negativos.
 - No validar concurrencia basica en actualizaciones de stock.
 - Depender de pruebas E2E para reglas que deben estar en backend.
+
+## Fase 4.1
+
+Se prueban statuses HTTP en `ApiError`, error de red, change-password tipado, alta de membership por email y duplicación, permisos, paginación `totalPages` y referencias resumidas en catálogo, movimientos y transferencias. Las pruebas de integración de API usan PostgreSQL real y verifican que los resúmenes respeten el tenant.

@@ -5,8 +5,15 @@ import type { ApiErrorKind } from '../../lib/apiError';
 /** Mensajes de alta de usuario (POST /users). */
 export const createUserMessages: EntityMessages = {
   conflict:
-    'Ya existe una cuenta con ese correo. Agregar usuarios existentes a esta cuenta aún no está disponible desde aquí.',
+    'Ya existe un usuario con ese correo. Usa "Agregar existente" para sumarlo a esta cuenta.',
   notFound: 'El rol seleccionado ya no está disponible. Recarga la página.',
+};
+
+/** Mensajes de alta por email (POST /memberships/by-email). */
+export const addExistingMessages: EntityMessages = {
+  conflict: 'Esa persona ya pertenece a esta cuenta.',
+  notFound:
+    'No existe un usuario activo con ese correo. Revisa que sea exacto o usa "Nuevo usuario" para crearlo.',
 };
 
 /** Mensajes de cambios de membresía (rol y estado). */

@@ -103,6 +103,10 @@ Tareas ejecutadas:
 
 Tambien se cerro la deuda de cambio de contraseña de identidad antes de implementar inventario. Estado: implementada y validada localmente; queda pendiente la ejecucion de CI remoto al publicar. No se implementaron compras, ventas ni notificaciones asincronas.
 
+## Fase 4.1: Endurecimiento de contratos
+
+Estado: implementada y validada localmente. Publica `ApiError`, los contratos tipados de cambio de contraseña y alta de membresía por email, referencias resumidas para catálogo/inventario y metadatos consistentes de paginación. No agrega modelos de negocio ni migraciones.
+
 ## Fase 5: Reportes basicos
 
 Objetivo: entregar visibilidad operacional.

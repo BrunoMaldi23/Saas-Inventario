@@ -16,7 +16,7 @@ import type {
   Product,
   Supplier,
   Warehouse,
-} from '../../lib/apiTypes.ts';
+} from '@inventario/types';
 import {
   checkOptional,
   checkRequired,
@@ -279,3 +279,32 @@ export const userSpec: FormSpec<UserValues, CreateUserPayload, { id: string }> =
       );
     },
   };
+
+// ---------- Usuario existente (POST /memberships/by-email) ----------
+export type MemberByEmailValues = { email: string; roleId: string };
+
+/** Asocia por email exacto una identidad existente a la cuenta activa. */
+export const memberByEmailSpec: FormSpec<
+  MemberByEmailValues,
+  MemberByEmailValues,
+  { id: string }
+> = {
+  empty: { email: '', roleId: '' },
+  fromRecord: () => {
+    throw new Error('Las membresías no se editan con este formulario.');
+  },
+  validate: (v) => {
+    const email = v.email.trim();
+    return finish(
+      clean<MemberByEmailValues>({
+        email: !email
+          ? 'Este campo es obligatorio.'
+          : email.length > 254 || !EMAIL_PATTERN.test(email)
+            ? 'Ingresa un correo válido.'
+            : undefined,
+        roleId: v.roleId ? undefined : 'Selecciona un rol.',
+      }),
+      () => ({ email: email.toLowerCase(), roleId: v.roleId }),
+    );
+  },
+};

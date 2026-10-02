@@ -21,6 +21,10 @@ export const Permission = {
   CompaniesWrite: 'companies:write',
   BranchesRead: 'branches:read',
   BranchesWrite: 'branches:write',
+  InventoryRead: 'inventory:read',
+  InventoryWrite: 'inventory:write',
+  InventoryAdjust: 'inventory:adjust',
+  InventoryTransfer: 'inventory:transfer',
 } as const;
 
 /** Sin permiso requerido el elemento es visible para cualquier sesión. */

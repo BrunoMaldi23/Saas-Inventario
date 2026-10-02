@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { changeMembershipRole } from '@inventario/api-client';
 import { Field, Select } from '../../components/ui/Field';
 import { classifyApiError } from '../../lib/apiError';
-import type { MembershipView, RoleOption } from '../../lib/apiTypes';
+import type { MembershipView, RoleOption } from '@inventario/types';
 import { useSession } from '../../session/sessionContext';
 import { roleLabel } from '../../session/types';
 import { EntityFormDialog } from '../catalog/EntityFormDialog';

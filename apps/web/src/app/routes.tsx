@@ -9,7 +9,9 @@ import { CompaniesPage } from '../pages/catalog/CompaniesPage';
 import { ProductsPage } from '../pages/catalog/ProductsPage';
 import { SuppliersPage } from '../pages/catalog/SuppliersPage';
 import { WarehousesPage } from '../pages/catalog/WarehousesPage';
-import { InventoryPage, MovementsPage } from '../pages/modulePages';
+import { InventoryPage } from '../pages/inventory/InventoryPage';
+import { MovementsPage } from '../pages/inventory/MovementsPage';
+import { TransfersPage } from '../pages/inventory/TransfersPage';
 import { ProfilePage } from '../pages/ProfilePage';
 import { ReportsPage } from '../pages/ReportsPage';
 import { SettingsPage } from '../pages/SettingsPage';
@@ -47,11 +49,23 @@ export const appRoutes: AppRoute[] = [
     render: () => <CategoriesPage />,
     permission: Permission.CategoriesRead,
   },
-  { path: '/inventario', title: 'Inventario', render: () => <InventoryPage /> },
+  {
+    path: '/inventario',
+    title: 'Inventario',
+    render: () => <InventoryPage />,
+    permission: Permission.InventoryRead,
+  },
   {
     path: '/movimientos',
     title: 'Movimientos',
     render: () => <MovementsPage />,
+    permission: Permission.InventoryRead,
+  },
+  {
+    path: '/transferencias',
+    title: 'Transferencias',
+    render: () => <TransfersPage />,
+    permission: Permission.InventoryRead,
   },
   {
     path: '/bodegas',

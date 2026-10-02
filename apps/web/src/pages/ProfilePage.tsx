@@ -1,8 +1,7 @@
 import { Avatar } from '../components/ui/Avatar';
 import { Badge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { Field, Input } from '../components/ui/Field';
+import { ChangePasswordCard } from '../features/profile/ChangePasswordCard';
 import { PageHeader } from '../components/ui/PageHeader';
 import { useAuthenticatedSession } from '../session/sessionContext';
 import { roleLabel } from '../session/types';
@@ -76,41 +75,7 @@ export function ProfilePage() {
           )}
         </Card>
 
-        <Card
-          title="Seguridad"
-          description="El cambio de contraseña estará disponible próximamente."
-        >
-          <form
-            className="form-grid"
-            onSubmit={(event) => event.preventDefault()}
-          >
-            <Field label="Contraseña actual">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="password"
-                  autoComplete="current-password"
-                  disabled
-                />
-              )}
-            </Field>
-            <Field label="Nueva contraseña" hint="Mínimo 8 caracteres.">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="password"
-                  autoComplete="new-password"
-                  disabled
-                />
-              )}
-            </Field>
-            <div>
-              <Button type="submit" disabled>
-                Actualizar contraseña
-              </Button>
-            </div>
-          </form>
-        </Card>
+        <ChangePasswordCard />
       </div>
     </>
   );

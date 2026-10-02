@@ -274,3 +274,15 @@ Motivo: evita mezclar signos y permite reconstruir el saldo desde movimientos si
 Decision: usar transacciones Prisma/PostgreSQL. Para salidas, ajustes negativos y origen de transferencias, efectuar un `UPDATE` condicional con `quantity >= cantidad` y decremento atomico; si no actualiza una fila, rechazar la operacion. Para entradas usar incremento atomico por clave unica de balance. Las transferencias bloquean los balances existentes en orden estable para evitar deadlocks entre direcciones opuestas. Cada transferencia de Fase 4 mueve un producto entre dos bodegas, crea dos movimientos y se completa en una sola transaccion. No hay transferencias pendientes ni configuracion de stock negativo.
 
 Motivo: el bloqueo de fila implicito del `UPDATE` condicional evita doble descuento y saldos negativos bajo concurrencia, sin Redis ni bloqueo distribuido. La clave unica `(tenantId, warehouseId, productId)` impide saldos duplicados.
+
+## DEC-025: Errores tipados y respuestas legibles
+
+Decision: el cliente compartido lanza `ApiError` con `status`, `message`, `code?` y `details?`; los errores de red usan `status: 0` y `NETWORK_ERROR`. Los errores 5xx se presentan con mensaje genérico. Los listados importantes preservan `items/page/pageSize/total` y agregan `totalPages`. Catálogo, movimientos y transferencias incluyen referencias resumidas seleccionadas en la misma consulta.
+
+Motivo: el frontend requiere distinguir estados y presentar nombres sin derivarlos de mensajes ni cargar catálogos completos. Se mantienen compatibles los campos existentes.
+
+## DEC-026: Agregar usuario existente por email exacto
+
+Decision: `POST /memberships/by-email` permite a quien tiene `memberships:manage` asociar un usuario activo usando coincidencia exacta de email normalizada. La ruta requiere tenant activo, no ofrece listado ni búsqueda parcial, responde 404 para usuarios ausentes/inactivos y 409 para membresías duplicadas, y audita el alta. No se implementan invitaciones.
+
+Motivo: permite el flujo de administración frontend sin publicar un directorio global de usuarios.

@@ -206,6 +206,7 @@ describe('operational catalog', () => {
       const list = await a.get(`/api/v1/${path}?page=1&pageSize=1`).expect(200);
       expect(list.body.items).toHaveLength(1);
       expect(list.body.total).toBe(1);
+      expect(list.body.totalPages).toBe(1);
       await a
         .patch(`/api/v1/${path}/${id}`)
         .send({ status: 'INACTIVE' })
@@ -236,6 +237,15 @@ describe('operational catalog', () => {
     expect(
       (await a.get(`/api/v1/products/${productA}`).expect(200)).body.minStock,
     ).toBe('2.5');
+    expect(
+      (await a.get(`/api/v1/products/${productA}`).expect(200)).body.category,
+    ).toEqual({ id: categoryA, name: 'Bebidas' });
+    expect(
+      (await a.get(`/api/v1/branches/${branchA}`).expect(200)).body.company,
+    ).toEqual({ id: companyA, name: 'Empresa A' });
+    expect(
+      (await a.get(`/api/v1/warehouses/${warehouseA}`).expect(200)).body.branch,
+    ).toEqual({ id: branchA, name: 'Sucursal A' });
     await a
       .post('/api/v1/products')
       .send({ tenantId: tenantB, name: 'Invalid', unitOfMeasure: 'unit' })

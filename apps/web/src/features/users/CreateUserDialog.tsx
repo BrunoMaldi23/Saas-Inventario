@@ -1,6 +1,6 @@
 import { createUser } from '@inventario/api-client';
 import { Field, Input, Select } from '../../components/ui/Field';
-import type { RoleOption } from '../../lib/apiTypes';
+import type { RoleOption } from '@inventario/types';
 import { roleLabel } from '../../session/types';
 import { EntityFormDialog } from '../catalog/EntityFormDialog';
 import { userSpec } from '../catalog/specs';

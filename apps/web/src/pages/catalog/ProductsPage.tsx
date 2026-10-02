@@ -8,7 +8,7 @@ import type { Column } from '../../components/ui/DataTable';
 import { Field, Input, Select } from '../../components/ui/Field';
 import { RecordStatusBadge } from '../../components/ui/RecordStatusBadge';
 import { Notice } from '../../components/ui/States';
-import type { Category, Product } from '../../lib/apiTypes';
+import type { Product } from '@inventario/types';
 import { Permission } from '../../lib/permissions';
 import {
   CatalogListPage,
@@ -36,14 +36,11 @@ const UNIT_SUGGESTIONS = ['Unidad', 'Caja', 'Paquete', 'Kg', 'Litro', 'Metro'];
 const setStatus = (id: string, status: Product['status']) =>
   updateProduct(id, { status });
 
-type CategoryOptions = ReturnType<typeof useCatalogOptions<Category>>;
-
-function ProductForm({
-  record,
-  onCancel,
-  onSaved,
-  categories,
-}: FormRenderProps<Product> & { categories: CategoryOptions }) {
+function ProductForm({ record, onCancel, onSaved }: FormRenderProps<Product>) {
+  const categories = useCatalogOptions(
+    listCategories,
+    Permission.CategoriesRead,
+  );
   const form = useEntityForm({
     spec: productSpec,
     record,
@@ -182,11 +179,6 @@ function ProductForm({
 }
 
 export function ProductsPage() {
-  const categories = useCatalogOptions(
-    listCategories,
-    Permission.CategoriesRead,
-  );
-
   const columns: Column<Product>[] = [
     {
       key: 'name',
@@ -208,7 +200,7 @@ export function ProductsPage() {
     {
       key: 'category',
       header: 'Categoría',
-      render: (p) => categories.nameOf(p.categoryId) ?? '—',
+      render: (p) => p.category?.name ?? '—',
     },
     { key: 'unit', header: 'Unidad', render: (p) => p.unitOfMeasure },
     {
@@ -243,7 +235,7 @@ export function ProductsPage() {
           inventario. El stock mínimo es solo un umbral de referencia.
         </Notice>
       }
-      renderForm={(props) => <ProductForm {...props} categories={categories} />}
+      renderForm={(props) => <ProductForm {...props} />}
     />
   );
 }

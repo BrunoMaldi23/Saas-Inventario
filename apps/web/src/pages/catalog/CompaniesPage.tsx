@@ -7,7 +7,7 @@ import type { Column } from '../../components/ui/DataTable';
 import { Field, Input } from '../../components/ui/Field';
 import { RecordStatusBadge } from '../../components/ui/RecordStatusBadge';
 import { Notice } from '../../components/ui/States';
-import type { Company } from '../../lib/apiTypes';
+import type { Company } from '@inventario/types';
 import { Permission } from '../../lib/permissions';
 import {
   CatalogListPage,

@@ -177,6 +177,9 @@ Reglas:
 
 ## Decisiones pendientes
 
-- Convencion final de cantidades en movimientos: signo unico o campos de direccion.
 - Recuperacion de password en MVP o fase posterior.
 - Mecanismo futuro de activacion de modulos especializados por rubro.
+
+## Endurecimiento de contratos (Fase 4.1)
+
+Las respuestas de catálogo, movimientos y transferencias agregan resúmenes de relaciones mediante `include/select` en la misma consulta Prisma, manteniendo el filtro de tenant de la entidad principal y sin cargas N+1. Los listados mantienen los campos de paginación existentes y agregan `totalPages`. `@inventario/api-client` centraliza los errores HTTP en `ApiError` con status numérico; una falla de red usa status 0. La API permite asociar por email exacto un usuario activo existente a un tenant solo con `memberships:manage`; no ofrece directorio ni búsqueda parcial.

@@ -2,7 +2,7 @@ import type {
   AuthSessionResponse,
   LoginRequest,
   TenantOption,
-} from '../lib/apiTypes.ts';
+} from '@inventario/types';
 
 /**
  * Sesión que consume la UI: la respuesta real de /auth/me más los tenants

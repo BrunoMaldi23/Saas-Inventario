@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import type { LoginRequest } from '../lib/apiTypes';
+import type { LoginRequest } from '@inventario/types';
 import { apiErrorMessage, classifyApiError } from '../lib/apiError';
 import { hasPermission } from '../lib/permissions';
 import { sessionSource } from './sessionSource';
@@ -50,37 +50,44 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const session = state.status === 'authenticated' ? state.session : null;
 
+  /**
+   * Pregunta al backend si la sesión sigue vigente. Devuelve false si expiró
+   * (y vuelve al login). Sin conexión no cierra la sesión: devuelve true.
+   */
+  const revalidate = useCallback(async () => {
+    try {
+      const next = await sessionSource.getSession();
+      if (!next) {
+        expireSession();
+        return false;
+      }
+      setState({ status: 'authenticated', session: next });
+      return true;
+    } catch {
+      return true;
+    }
+  }, [expireSession]);
+
   // Al vencer expiresAt se consulta al backend, que es quien decide.
   useEffect(() => {
     if (!session) return;
-    const revalidate = () => {
-      sessionSource
-        .getSession()
-        .then((next) => {
-          if (!next) expireSession();
-          else setState({ status: 'authenticated', session: next });
-        })
-        .catch(() => {
-          // Sin conexión no se cierra la sesión: la próxima petición decidirá.
-        });
-    };
     // Piso de 30 s: con el reloj local adelantado y una sesión aún válida en
     // el backend, un timeout de 0 ms revalidaría en bucle.
     const msUntilExpiry = Date.parse(session.expiresAt) - Date.now();
     const timer = window.setTimeout(
-      revalidate,
+      () => void revalidate(),
       Math.min(Math.max(msUntilExpiry, MIN_REVALIDATE_MS), MAX_TIMEOUT_MS),
     );
     // Al volver a la pestaña se detecta una sesión revocada o vencida.
     const onVisibility = () => {
-      if (document.visibilityState === 'visible') revalidate();
+      if (document.visibilityState === 'visible') void revalidate();
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       window.clearTimeout(timer);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [session, expireSession]);
+  }, [session, revalidate]);
 
   const reload = useCallback(() => {
     setState({ status: 'loading' });
@@ -129,6 +136,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       switchTenant,
       logout,
       expireSession,
+      revalidate,
     }),
     [
       state,
@@ -139,6 +147,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       switchTenant,
       logout,
       expireSession,
+      revalidate,
     ],
   );
 

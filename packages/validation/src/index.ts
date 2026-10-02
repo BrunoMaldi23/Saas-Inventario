@@ -42,6 +42,17 @@ export const createUserRequestSchema = z
 export const createMembershipRequestSchema = z
   .object({ userId: uuid, roleId: uuid })
   .strict();
+export const addMembershipByEmailRequestSchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .email()
+      .max(254)
+      .transform((value) => value.toLowerCase()),
+    roleId: uuid,
+  })
+  .strict();
 export const changeRoleRequestSchema = z.object({ roleId: uuid }).strict();
 export const changeMembershipStatusRequestSchema = z
   .object({ status: z.enum(['ACTIVE', 'INACTIVE']) })
@@ -78,3 +89,11 @@ export const membershipViewSchema = z.object({
 export const membershipsResponseSchema = z.object({
   memberships: z.array(membershipViewSchema),
 });
+export const apiErrorSchema = z
+  .object({
+    statusCode: z.number().int().optional(),
+    code: z.string().optional(),
+    message: z.union([z.string(), z.array(z.string())]).optional(),
+    details: z.unknown().optional(),
+  })
+  .passthrough();

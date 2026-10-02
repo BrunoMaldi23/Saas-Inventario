@@ -1,24 +1,21 @@
 import { useCallback } from 'react';
-import type { CatalogPage, CatalogQuery } from '../../lib/apiTypes';
 import { useSession } from '../../session/sessionContext';
 import { useApiQuery } from '../../session/useApiQuery';
 
 /**
- * Cantidad de registros activos de un recurso, tomada del `total` que
- * devuelve la API (pageSize 1). Sin permiso de lectura no consulta.
+ * Total real informado por un listado paginado (se pide pageSize 1 y se usa
+ * `total`). Sin el permiso de lectura no consulta y devuelve null.
  */
-export function useCatalogCount<T>(
-  list: (query: CatalogQuery) => Promise<CatalogPage<T>>,
+export function useTotal(
+  fetchPage: () => Promise<{ total: number }>,
   permission: string,
 ) {
   const { can } = useSession();
   const allowed = can(permission);
   const fetcher = useCallback(
     () =>
-      allowed
-        ? list({ page: 1, pageSize: 1, status: 'ACTIVE' }).then((p) => p.total)
-        : Promise.resolve(null),
-    [list, allowed],
+      allowed ? fetchPage().then((page) => page.total) : Promise.resolve(null),
+    [fetchPage, allowed],
   );
   const { state } = useApiQuery(fetcher);
   return {
@@ -28,3 +25,5 @@ export function useCatalogCount<T>(
     failed: state.status === 'error',
   };
 }
+
+export type TotalState = ReturnType<typeof useTotal>;

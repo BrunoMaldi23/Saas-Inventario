@@ -6,7 +6,7 @@ import {
 import type { Column } from '../../components/ui/DataTable';
 import { Field, Input, Select } from '../../components/ui/Field';
 import { RecordStatusBadge } from '../../components/ui/RecordStatusBadge';
-import type { Category } from '../../lib/apiTypes';
+import type { Category } from '@inventario/types';
 import { Permission } from '../../lib/permissions';
 import { parentCandidates } from '../../features/catalog/catalogLogic';
 import {
@@ -33,14 +33,15 @@ const labels: EntityLabels = {
 const setStatus = (id: string, status: Category['status']) =>
   updateCategory(id, { status });
 
-type CategoryOptions = ReturnType<typeof useCatalogOptions<Category>>;
-
 function CategoryForm({
   record,
   onCancel,
   onSaved,
-  categories,
-}: FormRenderProps<Category> & { categories: CategoryOptions }) {
+}: FormRenderProps<Category>) {
+  const categories = useCatalogOptions(
+    listCategories,
+    Permission.CategoriesRead,
+  );
   const form = useEntityForm({
     spec: categorySpec,
     record,
@@ -109,11 +110,6 @@ function CategoryForm({
 }
 
 export function CategoriesPage() {
-  const categories = useCatalogOptions(
-    listCategories,
-    Permission.CategoriesRead,
-  );
-
   const columns: Column<Category>[] = [
     {
       key: 'name',
@@ -124,8 +120,7 @@ export function CategoriesPage() {
     {
       key: 'parent',
       header: 'Categoría padre',
-      render: (c) =>
-        c.parentId ? (categories.nameOf(c.parentId) ?? '—') : 'Principal',
+      render: (c) => (c.parentId ? (c.parent?.name ?? '—') : 'Principal'),
     },
     {
       key: 'status',
@@ -142,24 +137,11 @@ export function CategoriesPage() {
       readPermission={Permission.CategoriesRead}
       writePermission={Permission.CategoriesWrite}
       list={listCategories}
-      setStatus={async (id, status) => {
-        const saved = await setStatus(id, status);
-        categories.reload();
-        return saved;
-      }}
+      setStatus={setStatus}
       columns={columns}
       searchLabel="Buscar categoría por nombre"
       icon="layers"
-      renderForm={(props) => (
-        <CategoryForm
-          {...props}
-          categories={categories}
-          onSaved={(record, outcome) => {
-            categories.reload();
-            props.onSaved(record, outcome);
-          }}
-        />
-      )}
+      renderForm={(props) => <CategoryForm {...props} />}
     />
   );
 }

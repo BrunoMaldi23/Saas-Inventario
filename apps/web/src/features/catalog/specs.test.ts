@@ -7,6 +7,7 @@ import {
   companySpec,
   productSpec,
   supplierSpec,
+  memberByEmailSpec,
   userSpec,
   warehouseSpec,
 } from './specs.ts';
@@ -173,5 +174,19 @@ describe('userSpec', () => {
         roleId: 'r1',
       },
     });
+  });
+});
+
+describe('memberByEmailSpec', () => {
+  it('exige correo válido y rol', () => {
+    const result = memberByEmailSpec.validate({ email: 'malo', roleId: '' });
+    assert.ok(!result.ok && result.errors.email && result.errors.roleId);
+  });
+
+  it('normaliza el correo a minúsculas (coincidencia exacta del contrato)', () => {
+    assert.deepEqual(
+      memberByEmailSpec.validate({ email: ' Ana@Tienda.CL ', roleId: 'r1' }),
+      { ok: true, payload: { email: 'ana@tienda.cl', roleId: 'r1' } },
+    );
   });
 });

@@ -126,11 +126,13 @@ export const branchSchema = z.object({
   companyId: uuid,
   name: z.string(),
   address: z.string().nullable(),
+  company: z.object({ id: uuid, name: z.string() }),
 });
 export const categorySchema = z.object({
   ...timestamps,
   name: z.string(),
   parentId: uuid.nullable(),
+  parent: z.object({ id: uuid, name: z.string() }).nullable(),
 });
 export const productSchema = z.object({
   ...timestamps,
@@ -141,6 +143,7 @@ export const productSchema = z.object({
   description: z.string().nullable(),
   unitOfMeasure: z.string(),
   minStock: z.string().nullable(),
+  category: z.object({ id: uuid, name: z.string() }).nullable(),
 });
 export const supplierSchema = z.object({
   ...timestamps,
@@ -154,6 +157,7 @@ export const warehouseSchema = z.object({
   branchId: uuid,
   name: z.string(),
   type: z.string(),
+  branch: z.object({ id: uuid, name: z.string() }),
 });
 export const catalogPageSchema = <T extends z.ZodTypeAny>(item: T) =>
   z.object({
@@ -161,4 +165,5 @@ export const catalogPageSchema = <T extends z.ZodTypeAny>(item: T) =>
     page: z.number().int(),
     pageSize: z.number().int(),
     total: z.number().int(),
+    totalPages: z.number().int(),
   });

@@ -135,6 +135,24 @@ export class AdminService {
     }
   }
 
+  async createMembershipByEmail(
+    auth: AuthContext,
+    tenant: TenantContext,
+    input: { email: string; roleId: string },
+  ): Promise<MembershipView> {
+    const role = await this.requireRole(tenant.tenantId, input.roleId);
+    this.assertAssignableRole(tenant, role.name);
+    const user = await this.database.client.user.findFirst({
+      where: { email: input.email, status: 'ACTIVE' },
+      select: { id: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return this.createMembership(auth, tenant, {
+      userId: user.id,
+      roleId: input.roleId,
+    });
+  }
+
   async changeRole(
     auth: AuthContext,
     tenant: TenantContext,

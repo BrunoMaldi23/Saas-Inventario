@@ -18,9 +18,10 @@ import {
 } from '../components/ui/States';
 import { useToast } from '../components/ui/toastContext';
 import { apiErrorMessage, classifyApiError } from '../lib/apiError';
-import type { MembershipView } from '../lib/apiTypes';
+import type { MembershipView } from '@inventario/types';
 import { Permission } from '../lib/permissions';
 import { ChangeRoleDialog } from '../features/users/ChangeRoleDialog';
+import { AddExistingUserDialog } from '../features/users/AddExistingUserDialog';
 import { CreateUserDialog } from '../features/users/CreateUserDialog';
 import {
   membershipErrorMessage,
@@ -33,6 +34,7 @@ import { useApiQuery } from '../session/useApiQuery';
 type Dialog =
   | { kind: 'none' }
   | { kind: 'create' }
+  | { kind: 'add-existing' }
   | { kind: 'role'; membership: MembershipView }
   | { kind: 'deactivate'; membership: MembershipView };
 
@@ -177,20 +179,42 @@ export function UsersPage() {
         title="Usuarios"
         description="Personas con acceso a la cuenta activa y sus roles."
         actions={
-          canCreate && (
-            <Button
-              variant="primary"
-              icon="plus"
-              disabled={roleOptions.length === 0}
-              onClick={() => setDialog({ kind: 'create' })}
-            >
-              Nuevo usuario
-            </Button>
-          )
+          <>
+            {canManage && (
+              <Button
+                icon="users"
+                disabled={roleOptions.length === 0}
+                onClick={() => setDialog({ kind: 'add-existing' })}
+              >
+                Agregar existente
+              </Button>
+            )}
+            {canCreate && (
+              <Button
+                variant="primary"
+                icon="plus"
+                disabled={roleOptions.length === 0}
+                onClick={() => setDialog({ kind: 'create' })}
+              >
+                Nuevo usuario
+              </Button>
+            )}
+          </>
         }
       />
       <Card flush>{content}</Card>
 
+      {dialog.kind === 'add-existing' && (
+        <AddExistingUserDialog
+          roles={roleOptions}
+          onCancel={close}
+          onAdded={() => {
+            close();
+            notify('Usuario agregado a esta cuenta.');
+            memberships.reload();
+          }}
+        />
+      )}
       {dialog.kind === 'create' && (
         <CreateUserDialog
           roles={roleOptions}

@@ -27,8 +27,9 @@ src/
 | `/`                    | Dashboard                          |
 | `/productos`           | Productos (`products:read`)        |
 | `/categorias`          | Categorías (`categories:read`)     |
-| `/inventario`          | Inventario                         |
-| `/movimientos`         | Movimientos                        |
+| `/inventario`          | Inventario (`inventory:read`)      |
+| `/movimientos`         | Movimientos (`inventory:read`)     |
+| `/transferencias`      | Transferencias (`inventory:read`)  |
 | `/bodegas`             | Bodegas (`warehouses:read`)        |
 | `/empresas`            | Empresas (`companies:read`)        |
 | `/sucursales`          | Sucursales (`branches:read`)       |
@@ -50,7 +51,7 @@ Las guardas en `app/App.tsx` solo ordenan la navegación; la autorización real 
 - **Tenants:** con una sola empresa se selecciona automáticamente; con varias se muestra `/seleccionar-empresa`. Al cambiar de tenant, el `AppShell` se remonta (`key` = id del tenant), lo que descarta el estado de datos anterior, y se vuelve al dashboard.
 - **Errores:** `lib/apiError.ts` clasifica los errores del cliente. Un 401 lleva al login con aviso de expiración (`useApiQuery` y `expireSession`); un 403 muestra "No tienes permiso"; con el backend caído se muestra un estado de reintento. La sesión se revalida al llegar `expiresAt` y al volver a la pestaña.
 - **Permisos:** la navegación y las acciones se filtran con `activeTenant.permissions` (`lib/permissions.ts`, `app/navigation.ts`, `permission` en `app/routes.tsx`). Nunca se infieren del nombre del rol. El backend sigue siendo la autoridad.
-- **Tipos:** `lib/apiTypes.ts` toma los tipos de `@inventario/types` a través de las firmas de `@inventario/api-client`, porque `apps/web` aún no declara `@inventario/types` como dependencia directa.
+- **Tipos:** se importan directamente desde `@inventario/types`.
 
 ## Catálogo (Fase 3)
 
@@ -60,6 +61,20 @@ Las guardas en `app/App.tsx` solo ordenan la navegación; la autorización real 
 - Referencias (categoría de un producto, sucursal de una bodega…): `useCatalogOptions` carga una página de hasta 100 registros.
 - Errores: 401 lleva al login, 403 muestra "sin permiso", 404 y 409 muestran mensajes propios de cada recurso, 400 indica que se revisen los datos y un error de red ofrece reintentar.
 - El stock disponible no se muestra hasta que exista inventario (Fase 4); `minStock` es solo un umbral.
+
+## Inventario (Fase 4)
+
+- **Pantallas:** Inventario muestra saldos de `GET /inventory`, con filtros de producto, bodega y `lowStock`. Movimientos (`GET /inventory/movements`) filtra por producto, bodega, tipo, rango de fechas y usuario. Transferencias usa `GET /transfers` y `GET /transfers/:id`.
+- **Operaciones:** un único `StockOperationDialog` cubre stock inicial, entrada, salida, ajuste y transferencia. Las acciones se muestran según `inventory:write`, `inventory:adjust` e `inventory:transfer`.
+- **Saldos:** nunca se calculan. Se muestra el saldo real del par producto-bodega, y se bloquean salidas que lo superan o un stock inicial repetido. El backend sigue siendo la autoridad (409).
+- **Validación:** `features/inventory/inventoryLogic.ts` (cantidades decimales exactas con BigInt, ajuste con motivo, transferencia con origen distinto del destino).
+- **Productos:** `ProductPicker` busca en el servidor, sin cargar el catálogo completo.
+
+## Contratos de Fase 4.1
+
+- Errores: `lib/apiError.ts` traduce `ApiError.status` (0 = red) a un tipo de error de UI. No se interpreta el texto de los mensajes.
+- Referencias: tablas y detalles usan las referencias resumidas de la API (`product`, `warehouse`, `actor`, `category`, `branch`, `company`, `parent`). No hay búsquedas auxiliares por ID; `useCatalogOptions` solo alimenta los selects de los formularios.
+- Usuarios: "Agregar existente" usa `POST /memberships/by-email` (coincidencia exacta, sin búsqueda de usuarios).
 
 ## Mocks
 

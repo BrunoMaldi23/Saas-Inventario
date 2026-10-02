@@ -32,3 +32,18 @@ describe('visibleNavigation', () => {
     );
   });
 });
+
+describe('navegación de inventario', () => {
+  it('inventory:read muestra Inventario, Movimientos y Transferencias', () => {
+    const items = labels(visibleNavigation(navigation, ['inventory:read']));
+    for (const label of ['Inventario', 'Movimientos', 'Transferencias']) {
+      assert.ok(items.includes(label), label);
+    }
+  });
+
+  it('sin inventory:read se ocultan', () => {
+    const items = labels(visibleNavigation(navigation, ['products:read']));
+    assert.ok(!items.includes('Inventario'));
+    assert.ok(!items.includes('Movimientos'));
+  });
+});

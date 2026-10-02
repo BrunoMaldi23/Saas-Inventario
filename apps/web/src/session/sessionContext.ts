@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { ActiveTenant, LoginRequest } from '../lib/apiTypes';
+import type { ActiveTenant, LoginRequest } from '@inventario/types';
 import type { Session } from './types';
 
 /*
@@ -29,6 +29,8 @@ export type SessionContextValue = {
   logout: () => Promise<void>;
   /** Llamar cuando una petición de datos responde 401. */
   expireSession: () => void;
+  /** Confirma con el backend si la sesión sigue vigente (false = expiró). */
+  revalidate: () => Promise<boolean>;
 };
 
 export const SessionContext = createContext<SessionContextValue | null>(null);

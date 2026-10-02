@@ -2,15 +2,15 @@ import { useCallback, useMemo } from 'react';
 import type {
   CatalogPage,
   CatalogQuery,
-  RecordStatus,
-} from '../../lib/apiTypes';
+  AccountStatus,
+} from '@inventario/types';
 import { useSession } from '../../session/sessionContext';
 import { useApiQuery } from '../../session/useApiQuery';
 
 /** Máximo permitido por el contrato para pageSize. */
 export const OPTIONS_LIMIT = 100;
 
-type Option = { id: string; name: string; status: RecordStatus };
+type Option = { id: string; name: string; status: AccountStatus };
 
 /**
  * Registros de otro recurso para selects y para mostrar nombres en tablas
@@ -32,6 +32,7 @@ export function useCatalogOptions<T extends Option>(
             page: 1,
             pageSize: OPTIONS_LIMIT,
             total: 0,
+            totalPages: 0,
           }),
     [list, allowed],
   );

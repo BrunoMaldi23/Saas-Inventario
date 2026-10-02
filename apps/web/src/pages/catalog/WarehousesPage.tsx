@@ -8,7 +8,7 @@ import type { Column } from '../../components/ui/DataTable';
 import { Field, Input, Select } from '../../components/ui/Field';
 import { RecordStatusBadge } from '../../components/ui/RecordStatusBadge';
 import { Notice } from '../../components/ui/States';
-import type { Branch, Warehouse } from '../../lib/apiTypes';
+import type { Warehouse } from '@inventario/types';
 import { Permission } from '../../lib/permissions';
 import {
   CatalogListPage,
@@ -41,14 +41,12 @@ const TYPE_SUGGESTIONS = [
 const setStatus = (id: string, status: Warehouse['status']) =>
   updateWarehouse(id, { status });
 
-type BranchOptions = ReturnType<typeof useCatalogOptions<Branch>>;
-
 function WarehouseForm({
   record,
   onCancel,
   onSaved,
-  branches,
-}: FormRenderProps<Warehouse> & { branches: BranchOptions }) {
+}: FormRenderProps<Warehouse>) {
+  const branches = useCatalogOptions(listBranches, Permission.BranchesRead);
   const form = useEntityForm({
     spec: warehouseSpec,
     record,
@@ -68,6 +66,14 @@ function WarehouseForm({
       onSubmit={() => void form.submit()}
       onCancel={onCancel}
     >
+      {branches.allowed &&
+        !branches.loading &&
+        branches.selectable().length === 0 && (
+          <Notice tone="warning">
+            No hay sucursales activas. Registra una sucursal antes de crear
+            bodegas.
+          </Notice>
+        )}
       <Field label="Nombre" error={fieldError('name')}>
         {(props) => (
           <Input
@@ -125,8 +131,6 @@ function WarehouseForm({
 }
 
 export function WarehousesPage() {
-  const branches = useCatalogOptions(listBranches, Permission.BranchesRead);
-
   const columns: Column<Warehouse>[] = [
     {
       key: 'name',
@@ -137,7 +141,7 @@ export function WarehousesPage() {
     {
       key: 'branch',
       header: 'Sucursal',
-      render: (w) => branches.nameOf(w.branchId) ?? '—',
+      render: (w) => w.branch.name,
     },
     { key: 'type', header: 'Tipo', render: (w) => w.type },
     {
@@ -159,16 +163,7 @@ export function WarehousesPage() {
       columns={columns}
       searchLabel="Buscar bodega por nombre"
       icon="warehouse"
-      notice={
-        branches.allowed &&
-        !branches.loading &&
-        branches.items.length === 0 && (
-          <Notice tone="warning">
-            Para crear bodegas primero debes registrar una sucursal.
-          </Notice>
-        )
-      }
-      renderForm={(props) => <WarehouseForm {...props} branches={branches} />}
+      renderForm={(props) => <WarehouseForm {...props} />}
     />
   );
 }

@@ -509,6 +509,12 @@ describe('inventory and movements', () => {
       .expect(200);
     expect(page.body.items).toHaveLength(2);
     expect(page.body.total).toBeGreaterThan(2);
+    expect(page.body.totalPages).toBeGreaterThan(1);
+    expect(page.body.items[0]).toMatchObject({
+      product: { id: productA, name: expect.any(String) },
+      warehouse: { id: expect.any(String), name: expect.any(String) },
+      actor: { id: expect.any(String), name: expect.any(String) },
+    });
     const filtered = await owner
       .get(
         `/api/v1/inventory/movements?productId=${productA}&warehouseId=${warehouseA1}&type=TRANSFER&createdByUserId=${ownerA}&from=2000-01-01T00:00:00.000Z&to=2100-01-01T00:00:00.000Z`,
@@ -516,6 +522,7 @@ describe('inventory and movements', () => {
       .expect(200);
     expect(filtered.body.total).toBe(1);
     expect(filtered.body.items[0].direction).toBe('OUT');
+    expect(filtered.body.items[0].warehouse).toMatchObject({ id: warehouseA1 });
     await owner
       .get(
         '/api/v1/inventory/movements?from=2100-01-01T00:00:00.000Z&to=2000-01-01T00:00:00.000Z',
@@ -537,10 +544,17 @@ describe('inventory and movements', () => {
           .expect(200)
       ).body.total,
     ).toBe(1);
-    expect(
-      (await owner.get('/api/v1/transfers?page=1&pageSize=1').expect(200)).body
-        .items,
-    ).toHaveLength(1);
+    const transfers = await owner
+      .get('/api/v1/transfers?page=1&pageSize=1')
+      .expect(200);
+    expect(transfers.body.items).toHaveLength(1);
+    expect(transfers.body.totalPages).toBeGreaterThan(0);
+    expect(transfers.body.items[0]).toMatchObject({
+      product: { id: expect.any(String), name: expect.any(String) },
+      fromWarehouse: { id: expect.any(String), name: expect.any(String) },
+      toWarehouse: { id: expect.any(String), name: expect.any(String) },
+      actor: { id: expect.any(String), name: expect.any(String) },
+    });
   });
 
   it('prevents double discount under concurrent requests', async () => {

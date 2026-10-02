@@ -37,6 +37,19 @@ type UpdateSupplier = z.output<typeof supplierUpdateSchema>;
 type CreateWarehouse = z.output<typeof warehouseCreateSchema>;
 type UpdateWarehouse = z.output<typeof warehouseUpdateSchema>;
 
+const branchInclude = {
+  company: { select: { id: true, name: true } },
+} satisfies Prisma.BranchInclude;
+const categoryInclude = {
+  parent: { select: { id: true, name: true } },
+} satisfies Prisma.CategoryInclude;
+const productInclude = {
+  category: { select: { id: true, name: true } },
+} satisfies Prisma.ProductInclude;
+const warehouseInclude = {
+  branch: { select: { id: true, name: true } },
+} satisfies Prisma.WarehouseInclude;
+
 function paging(query: CatalogQuery) {
   const page = query.page ?? 1;
   const pageSize = query.pageSize ?? 20;
@@ -100,7 +113,13 @@ export class CatalogService {
       }),
       this.database.client.company.count({ where }),
     ]);
-    return { items, page: p.page, pageSize: p.pageSize, total };
+    return {
+      items,
+      page: p.page,
+      pageSize: p.pageSize,
+      total,
+      totalPages: Math.ceil(total / p.pageSize),
+    };
   }
   async company(tenantId: string, id: string) {
     const item = await this.database.client.company.findFirst({
@@ -139,14 +158,22 @@ export class CatalogService {
         skip: p.skip,
         take: p.take,
         orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        include: branchInclude,
       }),
       this.database.client.branch.count({ where }),
     ]);
-    return { items, page: p.page, pageSize: p.pageSize, total };
+    return {
+      items,
+      page: p.page,
+      pageSize: p.pageSize,
+      total,
+      totalPages: Math.ceil(total / p.pageSize),
+    };
   }
   async branch(tenantId: string, id: string) {
     const item = await this.database.client.branch.findFirst({
       where: { id, tenantId },
+      include: branchInclude,
     });
     if (!item) throw new NotFoundException();
     return item;
@@ -163,7 +190,10 @@ export class CatalogService {
   async createBranch(tenantId: string, actor: string, input: CreateBranch) {
     await this.activeCompany(tenantId, input.companyId);
     return this.audited(tenantId, actor, 'BRANCH_CREATED', (tx) =>
-      tx.branch.create({ data: { ...input, tenantId } }),
+      tx.branch.create({
+        data: { ...input, tenantId },
+        include: branchInclude,
+      }),
     );
   }
   async updateBranch(
@@ -175,7 +205,11 @@ export class CatalogService {
     await this.branch(tenantId, id);
     if (input.companyId) await this.activeCompany(tenantId, input.companyId);
     return this.audited(tenantId, actor, 'BRANCH_UPDATED', (tx) =>
-      tx.branch.update({ where: { id, tenantId }, data: input }),
+      tx.branch.update({
+        where: { id, tenantId },
+        data: input,
+        include: branchInclude,
+      }),
     );
   }
 
@@ -192,14 +226,22 @@ export class CatalogService {
         skip: p.skip,
         take: p.take,
         orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        include: categoryInclude,
       }),
       this.database.client.category.count({ where }),
     ]);
-    return { items, page: p.page, pageSize: p.pageSize, total };
+    return {
+      items,
+      page: p.page,
+      pageSize: p.pageSize,
+      total,
+      totalPages: Math.ceil(total / p.pageSize),
+    };
   }
   async category(tenantId: string, id: string) {
     const item = await this.database.client.category.findFirst({
       where: { id, tenantId },
+      include: categoryInclude,
     });
     if (!item) throw new NotFoundException();
     return item;
@@ -223,7 +265,10 @@ export class CatalogService {
   async createCategory(tenantId: string, actor: string, input: CreateCategory) {
     if (input.parentId) await this.activeCategory(tenantId, input.parentId);
     return this.audited(tenantId, actor, 'CATEGORY_CREATED', (tx) =>
-      tx.category.create({ data: { ...input, tenantId } }),
+      tx.category.create({
+        data: { ...input, tenantId },
+        include: categoryInclude,
+      }),
     );
   }
   async updateCategory(
@@ -235,7 +280,11 @@ export class CatalogService {
     await this.category(tenantId, id);
     if (input.parentId) await this.activeCategory(tenantId, input.parentId, id);
     return this.audited(tenantId, actor, 'CATEGORY_UPDATED', (tx) =>
-      tx.category.update({ where: { id, tenantId }, data: input }),
+      tx.category.update({
+        where: { id, tenantId },
+        data: input,
+        include: categoryInclude,
+      }),
     );
   }
 
@@ -258,14 +307,22 @@ export class CatalogService {
         skip: p.skip,
         take: p.take,
         orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        include: productInclude,
       }),
       this.database.client.product.count({ where }),
     ]);
-    return { items, page: p.page, pageSize: p.pageSize, total };
+    return {
+      items,
+      page: p.page,
+      pageSize: p.pageSize,
+      total,
+      totalPages: Math.ceil(total / p.pageSize),
+    };
   }
   async product(tenantId: string, id: string) {
     const item = await this.database.client.product.findFirst({
       where: { id, tenantId },
+      include: productInclude,
     });
     if (!item) throw new NotFoundException();
     return item;
@@ -279,6 +336,7 @@ export class CatalogService {
           sku: input.sku === null ? null : input.sku?.toUpperCase(),
           tenantId,
         },
+        include: productInclude,
       }),
     );
   }
@@ -297,6 +355,7 @@ export class CatalogService {
           ...input,
           sku: input.sku === null ? null : input.sku?.toUpperCase(),
         },
+        include: productInclude,
       }),
     );
   }
@@ -317,7 +376,13 @@ export class CatalogService {
       }),
       this.database.client.supplier.count({ where }),
     ]);
-    return { items, page: p.page, pageSize: p.pageSize, total };
+    return {
+      items,
+      page: p.page,
+      pageSize: p.pageSize,
+      total,
+      totalPages: Math.ceil(total / p.pageSize),
+    };
   }
   async supplier(tenantId: string, id: string) {
     const item = await this.database.client.supplier.findFirst({
@@ -356,14 +421,22 @@ export class CatalogService {
         skip: p.skip,
         take: p.take,
         orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        include: warehouseInclude,
       }),
       this.database.client.warehouse.count({ where }),
     ]);
-    return { items, page: p.page, pageSize: p.pageSize, total };
+    return {
+      items,
+      page: p.page,
+      pageSize: p.pageSize,
+      total,
+      totalPages: Math.ceil(total / p.pageSize),
+    };
   }
   async warehouse(tenantId: string, id: string) {
     const item = await this.database.client.warehouse.findFirst({
       where: { id, tenantId },
+      include: warehouseInclude,
     });
     if (!item) throw new NotFoundException();
     return item;
@@ -384,7 +457,10 @@ export class CatalogService {
   ) {
     await this.activeBranch(tenantId, input.branchId);
     return this.audited(tenantId, actor, 'WAREHOUSE_CREATED', (tx) =>
-      tx.warehouse.create({ data: { ...input, tenantId } }),
+      tx.warehouse.create({
+        data: { ...input, tenantId },
+        include: warehouseInclude,
+      }),
     );
   }
   async updateWarehouse(
@@ -396,7 +472,11 @@ export class CatalogService {
     await this.warehouse(tenantId, id);
     if (input.branchId) await this.activeBranch(tenantId, input.branchId);
     return this.audited(tenantId, actor, 'WAREHOUSE_UPDATED', (tx) =>
-      tx.warehouse.update({ where: { id, tenantId }, data: input }),
+      tx.warehouse.update({
+        where: { id, tenantId },
+        data: input,
+        include: warehouseInclude,
+      }),
     );
   }
 }

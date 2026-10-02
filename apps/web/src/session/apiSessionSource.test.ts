@@ -1,10 +1,11 @@
 import { describe, it } from 'node:test';
+import { ApiError } from '@inventario/api-client';
 import assert from 'node:assert/strict';
 import type {
   ActiveTenant,
   AuthSessionResponse,
   TenantOption,
-} from '../lib/apiTypes.ts';
+} from '@inventario/types';
 import { createApiSessionSource, type AuthClient } from './apiSessionSource.ts';
 import { roleLabel } from './types.ts';
 
@@ -21,7 +22,13 @@ function active(tenant: TenantOption): ActiveTenant {
 }
 
 const httpError = (status: number) =>
-  new Error(`API request failed: ${status}`);
+  new ApiError({ status, message: `Request failed (${status})` });
+const networkError = () =>
+  new ApiError({
+    status: 0,
+    code: 'NETWORK_ERROR',
+    message: 'Network request failed',
+  });
 
 function fakeClient(
   tenants: TenantOption[],
@@ -62,11 +69,11 @@ describe('apiSessionSource', () => {
     const source = createApiSessionSource(
       fakeClient([tenantA], {
         getMe: async () => {
-          throw new TypeError('Failed to fetch');
+          throw networkError();
         },
       }),
     );
-    await assert.rejects(source.getSession(), TypeError);
+    await assert.rejects(source.getSession(), ApiError);
   });
 
   it('login con un solo tenant lo selecciona automáticamente', async () => {
@@ -100,7 +107,10 @@ describe('apiSessionSource', () => {
         },
       }),
     );
-    await assert.rejects(source.login(credentials), /401/);
+    await assert.rejects(
+      source.login(credentials),
+      (e) => e instanceof ApiError && e.status === 401,
+    );
   });
 
   it('switchTenant usa la respuesta real y refresca tenants', async () => {
@@ -112,7 +122,10 @@ describe('apiSessionSource', () => {
 
   it('switchTenant propaga 404 de tenant sin membresía', async () => {
     const source = createApiSessionSource(fakeClient([tenantA]));
-    await assert.rejects(source.switchTenant('ajeno'), /404/);
+    await assert.rejects(
+      source.switchTenant('ajeno'),
+      (e) => e instanceof ApiError && e.status === 404,
+    );
   });
 
   it('logout tolera una sesión ya expirada pero no fallas de red', async () => {
@@ -127,11 +140,11 @@ describe('apiSessionSource', () => {
     const offline = createApiSessionSource(
       fakeClient([], {
         logout: async () => {
-          throw new TypeError('Failed to fetch');
+          throw networkError();
         },
       }),
     );
-    await assert.rejects(offline.logout(), TypeError);
+    await assert.rejects(offline.logout(), ApiError);
   });
 });
 

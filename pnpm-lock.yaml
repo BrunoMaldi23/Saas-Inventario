@@ -103,6 +103,9 @@ importers:
       '@inventario/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@inventario/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       react:
         specifier: 19.1.1
         version: 19.1.1
@@ -131,6 +134,10 @@ importers:
       '@inventario/validation':
         specifier: workspace:*
         version: link:../validation
+    devDependencies:
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@types/node@22.18.6)(jiti@2.7.0)(terser@5.51.2)
 
   packages/config:
     dependencies:

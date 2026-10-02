@@ -1,38 +1,41 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { ApiError } from '@inventario/api-client';
 import { classifyApiError, getHttpStatus } from './apiError.ts';
 
-const httpError = (status: number) =>
-  new Error(`API request failed: ${status}`);
+const apiError = (status: number) =>
+  new ApiError({ status, message: 'Request failed' });
 
 describe('classifyApiError', () => {
   it('mapea los status del contrato', () => {
-    assert.equal(classifyApiError(httpError(400)), 'invalid');
-    assert.equal(classifyApiError(httpError(401)), 'unauthorized');
-    assert.equal(classifyApiError(httpError(403)), 'forbidden');
-    assert.equal(classifyApiError(httpError(404)), 'not-found');
-    assert.equal(classifyApiError(httpError(409)), 'conflict');
+    assert.equal(classifyApiError(apiError(400)), 'invalid');
+    assert.equal(classifyApiError(apiError(401)), 'unauthorized');
+    assert.equal(classifyApiError(apiError(403)), 'forbidden');
+    assert.equal(classifyApiError(apiError(404)), 'not-found');
+    assert.equal(classifyApiError(apiError(409)), 'conflict');
   });
 
-  it('trata 5xx y fallas de red como servicio no disponible', () => {
-    assert.equal(classifyApiError(httpError(500)), 'unavailable');
-    assert.equal(classifyApiError(httpError(503)), 'unavailable');
+  it('trata red (status 0) y 5xx como servicio no disponible', () => {
     assert.equal(
-      classifyApiError(new TypeError('Failed to fetch')),
+      classifyApiError(
+        new ApiError({ status: 0, code: 'NETWORK_ERROR', message: 'x' }),
+      ),
       'unavailable',
     );
+    assert.equal(classifyApiError(apiError(500)), 'unavailable');
+    assert.equal(classifyApiError(apiError(503)), 'unavailable');
   });
 
-  it('marca como inesperado lo que no reconoce', () => {
-    assert.equal(classifyApiError(new Error('boom')), 'unexpected');
+  it('no infiere el status desde el texto del mensaje', () => {
+    assert.equal(
+      classifyApiError(new Error('API request failed: 401')),
+      'unexpected',
+    );
+    assert.equal(getHttpStatus(new Error('Request failed (409)')), null);
+  });
+
+  it('marca como inesperado lo que no es ApiError', () => {
     assert.equal(classifyApiError('texto'), 'unexpected');
-    assert.equal(classifyApiError(httpError(418)), 'unexpected');
-  });
-});
-
-describe('getHttpStatus', () => {
-  it('extrae el status o devuelve null', () => {
-    assert.equal(getHttpStatus(httpError(401)), 401);
-    assert.equal(getHttpStatus(new Error('otro')), null);
+    assert.equal(classifyApiError(apiError(418)), 'unexpected');
   });
 });

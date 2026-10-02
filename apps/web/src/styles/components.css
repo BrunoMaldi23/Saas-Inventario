@@ -1421,3 +1421,171 @@ textarea.control:read-only {
 .table code {
   white-space: nowrap;
 }
+
+/* ===== Inventario ===== */
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  align-items: end;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.filters-grid__actions {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-height);
+}
+
+.checkbox-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--gray-700);
+  cursor: pointer;
+}
+
+.checkbox-field input,
+.choice input {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.picker {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.balance-hint {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  color: var(--gray-700);
+}
+
+.choice-group {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.choice:has(input:checked) {
+  border-color: var(--color-primary);
+  background: var(--brand-50);
+}
+
+.choice:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.choice__title {
+  display: block;
+  font-weight: 600;
+}
+
+.choice__description {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.operations-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.operations-bar__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.mini-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mini-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.mini-list li + li {
+  border-top: 1px solid var(--gray-100);
+}
+
+.qty {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.qty--in {
+  color: var(--success-fg);
+}
+
+.qty--out {
+  color: var(--danger-fg);
+}
+
+@media (max-width: 639px) {
+  .filters-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .operations-bar .cluster {
+    width: 100%;
+  }
+
+  .operations-bar .cluster .btn {
+    flex: 1 1 calc(50% - var(--space-2));
+    height: var(--touch-target);
+  }
+
+  .row-actions {
+    flex-wrap: wrap;
+  }
+
+  .row-actions .btn {
+    flex: 1 1 calc(50% - var(--space-1));
+  }
+}
+
+/* Móvil: la columna principal siempre encabeza la tarjeta. */
+@media (max-width: 639px) {
+  .table tbody tr {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .table td.is-primary {
+    order: -1;
+  }
+}

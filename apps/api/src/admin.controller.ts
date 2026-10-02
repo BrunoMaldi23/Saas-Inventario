@@ -20,6 +20,7 @@ import {
   changeMembershipStatusRequestSchema,
   changeRoleRequestSchema,
   createMembershipRequestSchema,
+  addMembershipByEmailRequestSchema,
   createUserRequestSchema,
 } from '@inventario/validation';
 import { AdminService } from './admin.service';
@@ -83,6 +84,20 @@ export class MembershipsController {
       context.auth,
       context.tenant,
       parseBody(createMembershipRequestSchema, body),
+    );
+  }
+
+  @RequirePermission('memberships:manage')
+  @Post('by-email')
+  createByEmail(
+    @Req() request: AccessRequest,
+    @Body() body: unknown,
+  ): Promise<MembershipView> {
+    const context = requireContext(request);
+    return this.admin.createMembershipByEmail(
+      context.auth,
+      context.tenant,
+      parseBody(addMembershipByEmailRequestSchema, body),
     );
   }
 

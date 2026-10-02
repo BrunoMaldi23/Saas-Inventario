@@ -334,6 +334,10 @@ describe('identity, tenancy and access control', () => {
         roleId: viewerRoleA,
       })
       .expect(403);
+    await viewer.agent
+      .post('/api/v1/memberships/by-email')
+      .send({ email: emailB, roleId: viewerRoleA })
+      .expect(403);
     const bMembership = await database.tenantMembership.findUniqueOrThrow({
       where: { tenantId_userId: { tenantId: tenantB, userId: ownerB } },
     });
@@ -354,10 +358,32 @@ describe('identity, tenancy and access control', () => {
       .send({ tenantId: tenantA })
       .expect(200);
     const added = await agent
-      .post('/api/v1/memberships')
-      .send({ userId: ownerB, roleId: viewerRoleA })
+      .post('/api/v1/memberships/by-email')
+      .send({ email: emailB.toUpperCase(), roleId: viewerRoleA })
       .expect(201);
     expect(added.body.user.id).toBe(ownerB);
+    await agent
+      .post('/api/v1/memberships/by-email')
+      .send({ email: emailB, roleId: viewerRoleA })
+      .expect(409);
+    await agent
+      .post('/api/v1/memberships/by-email')
+      .send({ email: `unknown-${suffix}@example.test`, roleId: viewerRoleA })
+      .expect(404, {
+        statusCode: 404,
+        message: 'User not found',
+        error: 'Not Found',
+      });
+    expect(
+      await database.auditLog.count({
+        where: {
+          tenantId: tenantA,
+          actorUserId: ownerA,
+          action: 'MEMBERSHIP_CREATED',
+          entityId: added.body.id,
+        },
+      }),
+    ).toBe(1);
     const bOwner = await login(emailB);
     const tenantList = await bOwner.agent.get('/api/v1/tenants').expect(200);
     expect(

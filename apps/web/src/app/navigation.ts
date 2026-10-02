@@ -48,9 +48,24 @@ export const navigation: NavGroup[] = [
   {
     label: 'Inventario',
     items: [
-      // Fase 4: aún sin permiso publicado; se muestran como módulos en preparación.
-      { label: 'Inventario', to: '/inventario', icon: 'layers' },
-      { label: 'Movimientos', to: '/movimientos', icon: 'movements' },
+      {
+        label: 'Inventario',
+        to: '/inventario',
+        icon: 'layers',
+        permission: Permission.InventoryRead,
+      },
+      {
+        label: 'Movimientos',
+        to: '/movimientos',
+        icon: 'movements',
+        permission: Permission.InventoryRead,
+      },
+      {
+        label: 'Transferencias',
+        to: '/transferencias',
+        icon: 'swap',
+        permission: Permission.InventoryRead,
+      },
       {
         label: 'Bodegas',
         to: '/bodegas',

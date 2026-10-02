@@ -110,6 +110,9 @@ export const movementViewSchema = z.object({
   quantity: z.string(),
   reason: z.string().nullable(),
   createdByUserId: uuid,
+  product: z.object({ id: uuid, name: z.string(), sku: z.string().nullable() }),
+  warehouse: z.object({ id: uuid, name: z.string() }),
+  actor: z.object({ id: uuid, name: z.string() }),
   createdAt: date,
 });
 export const transferViewSchema = z.object({
@@ -123,6 +126,10 @@ export const transferViewSchema = z.object({
   createdByUserId: uuid,
   createdAt: date,
   completedAt: date,
+  product: z.object({ id: uuid, name: z.string(), sku: z.string().nullable() }),
+  fromWarehouse: z.object({ id: uuid, name: z.string() }),
+  toWarehouse: z.object({ id: uuid, name: z.string() }),
+  actor: z.object({ id: uuid, name: z.string() }),
 });
 export const stockOperationResponseSchema = z.object({
   balance: balanceViewSchema,
@@ -139,16 +146,19 @@ export const inventoryPageSchema = z.object({
   page: z.number().int(),
   pageSize: z.number().int(),
   total: z.number().int(),
+  totalPages: z.number().int(),
 });
 export const movementPageSchema = z.object({
   items: z.array(movementViewSchema),
   page: z.number().int(),
   pageSize: z.number().int(),
   total: z.number().int(),
+  totalPages: z.number().int(),
 });
 export const transferPageSchema = z.object({
   items: z.array(transferViewSchema),
   page: z.number().int(),
   pageSize: z.number().int(),
   total: z.number().int(),
+  totalPages: z.number().int(),
 });

@@ -13,10 +13,14 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
   },
   "dependencies": {
     "@inventario/types": "workspace:*",
     "@inventario/validation": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "3.2.4"
   }
 }

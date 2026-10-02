@@ -18,14 +18,14 @@ import { apiErrorMessage, classifyApiError } from '../../lib/apiError';
 import type {
   CatalogPage,
   CatalogQuery,
-  RecordStatus,
-} from '../../lib/apiTypes';
+  AccountStatus,
+} from '@inventario/types';
 import { useSession } from '../../session/sessionContext';
 import { mutationErrorMessage, type EntityMessages } from './catalogLogic';
 import { PAGE_SIZE, useCatalogList } from './useCatalogList';
 import type { SaveOutcome } from './useEntityForm';
 
-type CatalogItem = { id: string; name: string; status: RecordStatus };
+type CatalogItem = { id: string; name: string; status: AccountStatus };
 
 /** Textos de un recurso. `gender` concuerda "creado/creada". */
 export type EntityLabels = EntityMessages & {
@@ -47,7 +47,7 @@ type CatalogListPageProps<T extends CatalogItem> = {
   readPermission: string;
   writePermission: string;
   list: (query: CatalogQuery) => Promise<CatalogPage<T>>;
-  setStatus: (id: string, status: RecordStatus) => Promise<T>;
+  setStatus: (id: string, status: AccountStatus) => Promise<T>;
   columns: Column<T>[];
   searchLabel: string;
   icon: IconName;
@@ -90,7 +90,7 @@ export function CatalogListPage<T extends CatalogItem>({
 
   if (!can(readPermission)) return <ForbiddenState />;
 
-  const changeStatus = async (record: T, status: RecordStatus) => {
+  const changeStatus = async (record: T, status: AccountStatus) => {
     setPendingId(record.id);
     try {
       await setStatus(record.id, status);
@@ -249,7 +249,7 @@ export function CatalogListPage<T extends CatalogItem>({
               aria-label="Estado"
               value={listState.status}
               onChange={(event) =>
-                listState.setStatus(event.target.value as RecordStatus | '')
+                listState.setStatus(event.target.value as AccountStatus | '')
               }
             >
               <option value="">Todos los estados</option>

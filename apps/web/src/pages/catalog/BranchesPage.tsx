@@ -8,7 +8,7 @@ import type { Column } from '../../components/ui/DataTable';
 import { Field, Input, Select } from '../../components/ui/Field';
 import { RecordStatusBadge } from '../../components/ui/RecordStatusBadge';
 import { Notice } from '../../components/ui/States';
-import type { Branch, Company } from '../../lib/apiTypes';
+import type { Branch } from '@inventario/types';
 import { Permission } from '../../lib/permissions';
 import {
   CatalogListPage,
@@ -33,14 +33,8 @@ const labels: EntityLabels = {
 const setStatus = (id: string, status: Branch['status']) =>
   updateBranch(id, { status });
 
-type CompanyOptions = ReturnType<typeof useCatalogOptions<Company>>;
-
-function BranchForm({
-  record,
-  onCancel,
-  onSaved,
-  companies,
-}: FormRenderProps<Branch> & { companies: CompanyOptions }) {
+function BranchForm({ record, onCancel, onSaved }: FormRenderProps<Branch>) {
+  const companies = useCatalogOptions(listCompanies, Permission.CompaniesRead);
   const form = useEntityForm({
     spec: branchSpec,
     record,
@@ -60,6 +54,14 @@ function BranchForm({
       onSubmit={() => void form.submit()}
       onCancel={onCancel}
     >
+      {companies.allowed &&
+        !companies.loading &&
+        companies.selectable().length === 0 && (
+          <Notice tone="warning">
+            No hay empresas activas. Registra una empresa antes de crear
+            sucursales.
+          </Notice>
+        )}
       <Field label="Nombre" error={fieldError('name')}>
         {(props) => (
           <Input
@@ -110,8 +112,6 @@ function BranchForm({
 }
 
 export function BranchesPage() {
-  const companies = useCatalogOptions(listCompanies, Permission.CompaniesRead);
-
   const columns: Column<Branch>[] = [
     {
       key: 'name',
@@ -122,7 +122,7 @@ export function BranchesPage() {
     {
       key: 'company',
       header: 'Empresa',
-      render: (b) => companies.nameOf(b.companyId) ?? '—',
+      render: (b) => b.company.name,
     },
     {
       key: 'address',
@@ -149,16 +149,7 @@ export function BranchesPage() {
       columns={columns}
       searchLabel="Buscar sucursal por nombre"
       icon="building"
-      notice={
-        companies.allowed &&
-        !companies.loading &&
-        companies.items.length === 0 && (
-          <Notice tone="warning">
-            Para crear sucursales primero debes registrar una empresa.
-          </Notice>
-        )
-      }
-      renderForm={(props) => <BranchForm {...props} companies={companies} />}
+      renderForm={(props) => <BranchForm {...props} />}
     />
   );
 }

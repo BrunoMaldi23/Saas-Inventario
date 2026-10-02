@@ -25,6 +25,7 @@ export type MembershipView = {
   status: AccountStatus;
 };
 export type MembershipsResponse = { memberships: MembershipView[] };
+export type AddMembershipByEmailRequest = { email: string; roleId: string };
 
 export type LoginRequest = { email: string; password: string };
 export type ChangePasswordRequest = {
@@ -53,6 +54,7 @@ export type CatalogPage<T> = {
   page: number;
   pageSize: number;
   total: number;
+  totalPages: number;
 };
 export type CatalogRecord = {
   id: string;
@@ -70,10 +72,12 @@ export type Branch = CatalogRecord & {
   companyId: string;
   name: string;
   address: string | null;
+  company: { id: string; name: string };
 };
 export type Category = CatalogRecord & {
   name: string;
   parentId: string | null;
+  parent: { id: string; name: string } | null;
 };
 export type Product = CatalogRecord & {
   categoryId: string | null;
@@ -83,6 +87,7 @@ export type Product = CatalogRecord & {
   description: string | null;
   unitOfMeasure: string;
   minStock: string | null;
+  category: { id: string; name: string } | null;
 };
 export type Supplier = CatalogRecord & {
   name: string;
@@ -94,6 +99,7 @@ export type Warehouse = CatalogRecord & {
   branchId: string;
   name: string;
   type: string;
+  branch: { id: string; name: string };
 };
 
 export type CreateCompany = {
@@ -169,6 +175,9 @@ export type StockMovementView = {
   quantity: string;
   reason: string | null;
   createdByUserId: string;
+  product: { id: string; name: string; sku: string | null };
+  warehouse: { id: string; name: string };
+  actor: { id: string; name: string };
   createdAt: string;
 };
 export type StockTransferView = {
@@ -182,6 +191,10 @@ export type StockTransferView = {
   createdByUserId: string;
   createdAt: string;
   completedAt: string;
+  product: { id: string; name: string; sku: string | null };
+  fromWarehouse: { id: string; name: string };
+  toWarehouse: { id: string; name: string };
+  actor: { id: string; name: string };
 };
 export type StockOperationRequest = {
   productId: string;

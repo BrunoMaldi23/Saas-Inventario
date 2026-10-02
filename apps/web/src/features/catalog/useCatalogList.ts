@@ -2,8 +2,8 @@ import { useCallback, useState } from 'react';
 import type {
   CatalogPage,
   CatalogQuery,
-  RecordStatus,
-} from '../../lib/apiTypes';
+  AccountStatus,
+} from '@inventario/types';
 import { useDebouncedValue } from '../../lib/useDebouncedValue';
 import { useApiQuery } from '../../session/useApiQuery';
 
@@ -17,7 +17,7 @@ export function useCatalogList<T>(
   list: (query: CatalogQuery) => Promise<CatalogPage<T>>,
 ) {
   const [search, setSearchValue] = useState('');
-  const [status, setStatusValue] = useState<RecordStatus | ''>('');
+  const [status, setStatusValue] = useState<AccountStatus | ''>('');
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebouncedValue(search.trim());
 
@@ -38,7 +38,7 @@ export function useCatalogList<T>(
     setSearchValue(value);
     setPage(1);
   }, []);
-  const setStatus = useCallback((value: RecordStatus | '') => {
+  const setStatus = useCallback((value: AccountStatus | '') => {
     setStatusValue(value);
     setPage(1);
   }, []);

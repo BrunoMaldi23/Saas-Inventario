@@ -116,6 +116,15 @@ Auditoria funcional:
 - Usar variables de entorno.
 - Mantener `.env.example` sin valores reales cuando exista implementacion.
 
+
+
+
+## Endurecimiento de contratos (Fase 4.1)
+
+- `POST /memberships/by-email` requiere sesión, tenant activo y `memberships:manage`; solo busca email exacto normalizado y devuelve el mismo 404 para usuario ausente o inactivo. Nunca devuelve coincidencias múltiples ni permite exploración parcial. La unicidad compuesta impide membresías duplicadas y la creación se audita.
+- El cliente interpreta errores por `ApiError.status`, nunca por el texto. Para 5xx muestra un mensaje genérico y no propaga el mensaje interno del servidor; la falla de red tiene status 0.
+- Los resúmenes de catálogo/inventario se seleccionan dentro del mismo tenant y contienen solo identificador y etiqueta legible. No incluyen información sensible ni hashes.
+
 ## Controles futuros
 
 - Rate limiting.
@@ -124,3 +133,4 @@ Auditoria funcional:
 - Revision de permisos por sucursal.
 - Alertas ante actividad sospechosa.
 - Backups y restauracion probada.
+

@@ -34,6 +34,17 @@ const balanceInclude = {
   product: { select: { id: true, name: true, sku: true, minStock: true } },
   warehouse: { select: { id: true, name: true } },
 } satisfies Prisma.InventoryBalanceInclude;
+const movementInclude = {
+  product: { select: { id: true, name: true, sku: true } },
+  warehouse: { select: { id: true, name: true } },
+  createdBy: { select: { id: true, name: true } },
+} satisfies Prisma.StockMovementInclude;
+const transferInclude = {
+  product: { select: { id: true, name: true, sku: true } },
+  fromWarehouse: { select: { id: true, name: true } },
+  toWarehouse: { select: { id: true, name: true } },
+  createdBy: { select: { id: true, name: true } },
+} satisfies Prisma.StockTransferInclude;
 type BalanceRow = Prisma.InventoryBalanceGetPayload<{
   include: typeof balanceInclude;
 }>;
@@ -67,6 +78,9 @@ function movementView(row: {
   reason: string | null;
   createdByUserId: string;
   createdAt: Date;
+  product: StockMovementView['product'];
+  warehouse: StockMovementView['warehouse'];
+  createdBy: StockMovementView['actor'];
 }): StockMovementView {
   return {
     id: row.id,
@@ -78,6 +92,9 @@ function movementView(row: {
     quantity: row.quantity.toString(),
     reason: row.reason,
     createdByUserId: row.createdByUserId,
+    product: row.product,
+    warehouse: row.warehouse,
+    actor: row.createdBy,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -93,6 +110,10 @@ function transferView(row: {
   createdByUserId: string;
   createdAt: Date;
   completedAt: Date;
+  product: StockTransferView['product'];
+  fromWarehouse: StockTransferView['fromWarehouse'];
+  toWarehouse: StockTransferView['toWarehouse'];
+  createdBy: StockTransferView['actor'];
 }): StockTransferView {
   return {
     id: row.id,
@@ -105,6 +126,10 @@ function transferView(row: {
     createdByUserId: row.createdByUserId,
     createdAt: row.createdAt.toISOString(),
     completedAt: row.completedAt.toISOString(),
+    product: row.product,
+    fromWarehouse: row.fromWarehouse,
+    toWarehouse: row.toWarehouse,
+    actor: row.createdBy,
   };
 }
 
@@ -243,6 +268,7 @@ export class InventoryService {
             reason: input.reason,
             createdByUserId: actor,
           },
+          include: movementInclude,
         });
         if (auditAction)
           await tx.auditLog.create({
@@ -329,6 +355,7 @@ export class InventoryService {
           reason: input.reason,
           createdByUserId: actor,
         },
+        include: transferInclude,
       });
       await this.decrease(
         tx,
@@ -356,6 +383,7 @@ export class InventoryService {
           reason: input.reason,
           createdByUserId: actor,
         },
+        include: movementInclude,
       });
       const incoming = await tx.stockMovement.create({
         data: {
@@ -369,6 +397,7 @@ export class InventoryService {
           reason: input.reason,
           createdByUserId: actor,
         },
+        include: movementInclude,
       });
       await tx.auditLog.create({
         data: {
@@ -426,6 +455,7 @@ export class InventoryService {
       page: p.page,
       pageSize: p.pageSize,
       total,
+      totalPages: Math.ceil(total / p.pageSize),
     };
   }
 
@@ -465,6 +495,7 @@ export class InventoryService {
       page: p.page,
       pageSize: p.pageSize,
       total: Number(counts[0]?.count ?? 0n),
+      totalPages: Math.ceil(Number(counts[0]?.count ?? 0n) / p.pageSize),
     };
   }
 
@@ -490,6 +521,7 @@ export class InventoryService {
         skip: p.skip,
         take: p.take,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        include: movementInclude,
       }),
       this.database.client.stockMovement.count({ where }),
     ]);
@@ -498,6 +530,7 @@ export class InventoryService {
       page: p.page,
       pageSize: p.pageSize,
       total,
+      totalPages: Math.ceil(total / p.pageSize),
     };
   }
 
@@ -516,6 +549,7 @@ export class InventoryService {
         skip: p.skip,
         take: p.take,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        include: transferInclude,
       }),
       this.database.client.stockTransfer.count({ where }),
     ]);
@@ -524,12 +558,14 @@ export class InventoryService {
       page: p.page,
       pageSize: p.pageSize,
       total,
+      totalPages: Math.ceil(total / p.pageSize),
     };
   }
 
   async transferById(tenantId: string, id: string): Promise<StockTransferView> {
     const transfer = await this.database.client.stockTransfer.findFirst({
       where: { id, tenantId },
+      include: transferInclude,
     });
     if (!transfer) throw new NotFoundException();
     return transferView(transfer);

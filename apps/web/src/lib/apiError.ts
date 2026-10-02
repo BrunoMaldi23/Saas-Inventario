@@ -1,10 +1,9 @@
+import { ApiError } from '@inventario/api-client';
+
 /*
- * Clasificación de errores de @inventario/api-client.
- *
- * El cliente lanza `Error('API request failed: <status>')` sin exponer el
- * status como dato, y fetch lanza TypeError ante fallas de red. Este módulo es
- * el ÚNICO lugar que interpreta ese formato: si el cliente pasa a exponer un
- * error tipado, solo cambia getHttpStatus().
+ * Clasificación de errores de @inventario/api-client: único lugar que traduce
+ * el `status` de `ApiError` a un tipo de error de UI. El status nunca se
+ * infiere del texto del mensaje (docs/API_CONTRACTS.md).
  */
 
 export type ApiErrorKind =
@@ -13,23 +12,17 @@ export type ApiErrorKind =
   | 'not-found' // 404
   | 'conflict' // 409
   | 'invalid' // 400
-  | 'unavailable' // red caída, API apagada (el proxy de Vite responde 5xx) o 5xx
+  | 'unavailable' // 0 (red), 5xx o API apagada (el proxy de Vite responde 500)
   | 'unexpected'; // respuesta fuera de contrato u otro error
 
-const STATUS_PATTERN = /API request failed: (\d{3})/;
-
 export function getHttpStatus(error: unknown): number | null {
-  if (!(error instanceof Error)) return null;
-  const match = STATUS_PATTERN.exec(error.message);
-  return match?.[1] ? Number(match[1]) : null;
+  return error instanceof ApiError ? error.status : null;
 }
 
 export function classifyApiError(error: unknown): ApiErrorKind {
   const status = getHttpStatus(error);
-  if (status === null) {
-    // fetch rechaza con TypeError cuando no hay conexión.
-    return error instanceof TypeError ? 'unavailable' : 'unexpected';
-  }
+  if (status === null) return 'unexpected';
+  if (status === 0) return 'unavailable'; // ApiError NETWORK_ERROR
   if (status === 400) return 'invalid';
   if (status === 401) return 'unauthorized';
   if (status === 403) return 'forbidden';

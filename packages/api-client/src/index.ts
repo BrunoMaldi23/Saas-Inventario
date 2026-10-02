@@ -25,6 +25,7 @@ import type {
   StockMovementView,
   StockTransferView,
   AuthSessionResponse,
+  AddMembershipByEmailRequest,
   ChangePasswordRequest,
   ChangeMembershipStatusRequest,
   ChangeRoleRequest,
@@ -69,17 +70,66 @@ async function requestJson(
   method = 'GET',
   body?: unknown,
 ): Promise<unknown> {
-  const response = await fetch(path, {
-    method,
-    credentials: 'same-origin',
-    cache: 'no-store',
-    headers:
-      body === undefined ? undefined : { 'Content-Type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+  let response: Response;
+  try {
+    response = await fetch(path, {
+      method,
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers:
+        body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch (error) {
+    if (error instanceof TypeError)
+      throw new ApiError({
+        status: 0,
+        code: 'NETWORK_ERROR',
+        message: 'Network request failed',
+      });
+    throw error;
+  }
+  if (!response.ok) {
+    let payload: { code?: unknown; message?: unknown; details?: unknown } = {};
+    try {
+      payload = await response.json();
+    } catch {
+      // Use a safe status-based fallback when the server did not return JSON.
+    }
+    const message =
+      response.status >= 500
+        ? 'The server could not complete the request'
+        : typeof payload.message === 'string'
+          ? payload.message
+          : `Request failed (${response.status})`;
+    throw new ApiError({
+      status: response.status,
+      code: typeof payload.code === 'string' ? payload.code : undefined,
+      message,
+      details: response.status >= 500 ? undefined : payload.details,
+    });
+  }
   if (response.status === 204) return undefined;
   return response.json();
+}
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code?: string;
+  readonly details?: unknown;
+
+  constructor(input: {
+    status: number;
+    code?: string;
+    message: string;
+    details?: unknown;
+  }) {
+    super(input.message);
+    this.name = 'ApiError';
+    this.status = input.status;
+    this.code = input.code;
+    this.details = input.details;
+  }
 }
 
 export async function getApiHealth(): Promise<HealthResponse> {
@@ -147,6 +197,14 @@ export async function createMembership(
 ): Promise<MembershipView> {
   return membershipViewSchema.parse(
     await requestJson('/api/v1/memberships', 'POST', input),
+  );
+}
+
+export async function addMembershipByEmail(
+  input: AddMembershipByEmailRequest,
+): Promise<MembershipView> {
+  return membershipViewSchema.parse(
+    await requestJson('/api/v1/memberships/by-email', 'POST', input),
   );
 }
 
