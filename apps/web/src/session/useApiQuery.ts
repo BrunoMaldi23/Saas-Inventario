@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { classifyApiError, type ApiErrorKind } from '../lib/apiError';
-import { useSession } from './SessionProvider';
+import { useSession } from './sessionContext';
 
 export type QueryState<T> =
   | { status: 'loading' }
@@ -19,6 +19,9 @@ export function useApiQuery<T>(fetcher: () => Promise<T>) {
 
   useEffect(() => {
     let active = true;
+    // Cada consulta nueva (otra página, filtro o tenant) parte en loading:
+    // nunca se muestran datos de una consulta anterior como actuales.
+    setState({ status: 'loading' });
     fetcher()
       .then((data) => {
         if (active) setState({ status: 'success', data });
@@ -34,10 +37,7 @@ export function useApiQuery<T>(fetcher: () => Promise<T>) {
     };
   }, [fetcher, attempt, expireSession]);
 
-  const reload = useCallback(() => {
-    setState({ status: 'loading' });
-    setAttempt((n) => n + 1);
-  }, []);
+  const reload = useCallback(() => setAttempt((n) => n + 1), []);
 
   return { state, reload };
 }

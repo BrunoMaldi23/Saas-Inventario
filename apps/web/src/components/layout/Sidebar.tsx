@@ -2,7 +2,7 @@ import { navigation, visibleNavigation } from '../../app/navigation';
 import { cx } from '../../lib/cx';
 import { isActivePath } from '../../lib/path';
 import { Link, usePathname } from '../../lib/router';
-import { useActiveTenant } from '../../session/SessionProvider';
+import { useActiveTenant } from '../../session/sessionContext';
 import { IconButton } from '../ui/Button';
 import { Icon } from '../ui/Icon';
 import { TenantSwitcher } from './TenantSwitcher';

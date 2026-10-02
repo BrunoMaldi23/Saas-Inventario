@@ -7,6 +7,7 @@ import {
 import { createHash, randomBytes } from 'node:crypto';
 import type {
   AuthSessionResponse,
+  ChangePasswordRequest,
   TenantOption,
   TenantsResponse,
 } from '@inventario/types';
@@ -67,6 +68,44 @@ export class AuthService {
           actorUserId: auth.userId,
           action: 'LOGOUT',
           entityId: auth.sessionId,
+        },
+      });
+    });
+  }
+
+  async changePassword(
+    auth: AuthContext,
+    input: ChangePasswordRequest,
+  ): Promise<void> {
+    const user = await this.database.client.user.findUnique({
+      where: { id: auth.userId },
+    });
+    if (
+      !user ||
+      !(await verifyPassword(user.passwordHash, input.currentPassword))
+    )
+      throw new UnauthorizedException('Invalid credentials');
+    const passwordHash = await hashPassword(input.newPassword);
+    await this.database.client.$transaction(async (tx) => {
+      const changed = await tx.user.updateMany({
+        where: {
+          id: auth.userId,
+          passwordHash: user.passwordHash,
+          status: 'ACTIVE',
+        },
+        data: { passwordHash },
+      });
+      if (changed.count !== 1)
+        throw new UnauthorizedException('Invalid credentials');
+      await tx.session.deleteMany({
+        where: { userId: auth.userId, id: { not: auth.sessionId } },
+      });
+      await tx.auditLog.create({
+        data: {
+          tenantId: auth.activeTenantId,
+          actorUserId: auth.userId,
+          action: 'PASSWORD_CHANGED',
+          entityId: auth.userId,
         },
       });
     });

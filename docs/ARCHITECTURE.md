@@ -51,6 +51,12 @@ La sesion es un token aleatorio en cookie HTTP-only; PostgreSQL guarda solo su h
 
 El catalogo operacional incorpora seis recursos REST: empresas, sucursales, categorias, productos, proveedores y bodegas. Sus controladores validan payloads y declaran permisos; `CatalogService` contiene las consultas, reglas de relacion y auditoria. Cada consulta se filtra por el tenant activo resuelto por los guards de Fase 2. Las claves foraneas compuestas impiden que sucursales, categorias, productos o bodegas apunten a registros de otro tenant, incluso si una escritura eludiera la API. No existen saldos ni movimientos de stock.
 
+## Implementacion de Fase 4
+
+`InventoryService` es el unico punto de escritura de balances y movimientos. Cada operacion valida producto y bodega activos del tenant, modifica `InventoryBalance` y crea `StockMovement` en una transaccion. Las salidas usan decremento condicional (`quantity >= cantidad`) para evitar saldos negativos bajo concurrencia; las entradas usan incremento atomico por clave unica. Las transferencias de un producto bloquean balances existentes en orden estable, descuentan origen, incrementan destino y crean dos movimientos dentro de una transaccion. Un error revierte toda la operacion. No se agregan Redis, jobs ni worker.
+
+El cambio de contraseña usa la sesion autenticada sin requerir tenant activo; verifica la contraseña actual, actualiza Argon2id, revoca otras sesiones y audita en una transaccion. La sesion actual conserva su expiracion original.
+
 ## Principios de diseno
 
 - Modularidad por dominio funcional.

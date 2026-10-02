@@ -27,6 +27,10 @@ export type MembershipView = {
 export type MembershipsResponse = { memberships: MembershipView[] };
 
 export type LoginRequest = { email: string; password: string };
+export type ChangePasswordRequest = {
+  currentPassword: string;
+  newPassword: string;
+};
 export type SelectTenantRequest = { tenantId: string };
 export type CreateUserRequest = {
   email: string;
@@ -131,4 +135,100 @@ export type CreateWarehouse = {
   name: string;
   type: string;
   status?: AccountStatus;
+};
+
+export type MovementType =
+  | 'INITIAL'
+  | 'ENTRY'
+  | 'ISSUE'
+  | 'ADJUSTMENT'
+  | 'TRANSFER';
+export type MovementDirection = 'IN' | 'OUT';
+export type InventoryBalanceView = {
+  id: string;
+  productId: string;
+  warehouseId: string;
+  quantity: string;
+  product: {
+    id: string;
+    name: string;
+    sku: string | null;
+    minStock: string | null;
+  };
+  warehouse: { id: string; name: string };
+  createdAt: string;
+  updatedAt: string;
+};
+export type StockMovementView = {
+  id: string;
+  productId: string;
+  warehouseId: string;
+  transferId: string | null;
+  type: MovementType;
+  direction: MovementDirection;
+  quantity: string;
+  reason: string | null;
+  createdByUserId: string;
+  createdAt: string;
+};
+export type StockTransferView = {
+  id: string;
+  productId: string;
+  fromWarehouseId: string;
+  toWarehouseId: string;
+  quantity: string;
+  status: 'COMPLETED';
+  reason: string | null;
+  createdByUserId: string;
+  createdAt: string;
+  completedAt: string;
+};
+export type StockOperationRequest = {
+  productId: string;
+  warehouseId: string;
+  quantity: string;
+  reason?: string;
+};
+export type StockAdjustmentRequest = StockOperationRequest & {
+  direction: MovementDirection;
+  reason: string;
+};
+export type StockTransferRequest = {
+  productId: string;
+  fromWarehouseId: string;
+  toWarehouseId: string;
+  quantity: string;
+  reason?: string;
+};
+export type InventoryQuery = {
+  page?: number;
+  pageSize?: number;
+  productId?: string;
+  warehouseId?: string;
+  lowStock?: boolean;
+};
+export type MovementQuery = {
+  page?: number;
+  pageSize?: number;
+  productId?: string;
+  warehouseId?: string;
+  type?: MovementType;
+  from?: string;
+  to?: string;
+  createdByUserId?: string;
+};
+export type TransferQuery = {
+  page?: number;
+  pageSize?: number;
+  productId?: string;
+};
+export type StockOperationResponse = {
+  balance: InventoryBalanceView;
+  movement: StockMovementView;
+};
+export type StockTransferResponse = {
+  transfer: StockTransferView;
+  source: InventoryBalanceView;
+  destination: InventoryBalanceView;
+  movements: [StockMovementView, StockMovementView];
 };

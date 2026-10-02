@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Field, Input } from '../components/ui/Field';
 import { Notice } from '../components/ui/States';
 import { apiErrorMessage, classifyApiError } from '../lib/apiError';
-import { useSession, type SignedOutReason } from '../session/SessionProvider';
+import { useSession, type SignedOutReason } from '../session/sessionContext';
 
 type FieldErrors = { email?: string; password?: string };
 

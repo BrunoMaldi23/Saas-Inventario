@@ -42,6 +42,8 @@ Estrategia inicial:
 
 Implementacion de Fase 2: cookie HTTP-only, `SameSite=Lax`, `Secure` en produccion y duracion de 8 horas. Se almacena en `Session` solo SHA-256 del token aleatorio; logout borra la sesion. Login invalido, usuario inexistente e inactivo responden igual y realizan verificacion Argon2id para reducir diferencias de tiempo. El frontend debe usar el mismo origen mediante proxy o reverse proxy. Un guard rechaza escrituras con `Origin`/`Referer` de otro origen y `Sec-Fetch-Site: cross-site`; `SameSite` agrega defensa adicional. No se habilita CORS entre origenes en esta fase.
 
+El cambio de contraseña de Fase 4 exige sesion y contraseña actual; nunca devuelve hashes ni registra contraseñas. Tras actualizar Argon2id revoca las otras sesiones y audita `PASSWORD_CHANGED` atomicamente. La sesion actual conserva su expiracion previa. Contraseña actual incorrecta responde 401 generico; payload invalido responde 400.
+
 Pendiente de decision:
 
 - Necesidad de refresh token en MVP.
@@ -71,6 +73,8 @@ Reglas:
 Implementacion de Fase 2: cada request protegida revisa la sesion, estado de usuario y, cuando corresponde, tenant y membresia activos. Roles y permisos se consultan del servidor en cada request; no se aceptan permisos del cliente. Owner gestiona todas las identidades; Admin gestiona solo usuarios con roles operativos y no puede asignar ni modificar Owner o Admin. Los cambios que retirarian al ultimo Owner activo se rechazan dentro de transacciones serializables. Las operaciones de identidad relevantes escriben auditoria en la misma transaccion.
 
 Implementacion de Fase 3: cada ruta de catalogo declara permiso `recurso:read` o `recurso:write`. El API toma `tenantId` exclusivamente de la sesion; Zod rechaza campos no declarados, incluido `tenantId`, en escrituras. Las lecturas y los targets de actualizacion se acotan por tenant. Las referencias a Company, Branch y Category se validan en el servicio y estan protegidas tambien por claves foraneas compuestas. La auditoria de creacion y actualizacion se escribe en la misma transaccion que el registro. La desactivacion se realiza con PATCH de `status`; no se exponen DELETE comerciales.
+
+En Fase 4, `inventory:read`, `inventory:write`, `inventory:adjust` e `inventory:transfer` se verifican en backend. Producto, bodega y sus padres operativos deben estar activos y pertenecer al tenant. Cada balance, movimiento y transferencia tiene `tenantId`; relaciones compuestas lo refuerzan en PostgreSQL. El decremento condicional y CHECK de saldo impiden stock negativo incluso bajo carreras. Stock inicial, ajustes y transferencias crean `AuditLog`; entradas y salidas manuales ya quedan trazadas por `StockMovement`, sin duplicarlas en auditoria.
 
 ## Validacion de inputs
 

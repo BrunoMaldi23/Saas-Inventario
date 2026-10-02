@@ -211,7 +211,6 @@ Fase 0 queda cerrada formalmente con estas decisiones documentadas. No se inicia
 
 - Necesidad de refresh token en MVP.
 - Recuperacion de password en MVP o fase posterior.
-- Convencion final de cantidades en movimientos: signo unico o campos de direccion.
 - Mecanismo futuro de activacion de modulos especializados por rubro.
 
 ## DEC-015: Fundacion tecnica de Fase 1
@@ -257,3 +256,21 @@ Motivo: evita ambiguedad de `NULL` en categorias raiz y perdida de precision en 
 Decision: Owner y Admin leen y escriben los seis recursos; Viewer solo lee. InventoryManager escribe categorias, productos, proveedores y bodegas; BranchManager escribe productos, proveedores y bodegas. Los dos roles operativos leen los seis recursos. La migracion asigna estos permisos a tenants existentes; el bootstrap los asigna a tenants nuevos.
 
 Motivo: cubre operaciones iniciales sin crear administracion configurable de roles ni autorizacion por sucursal en esta fase.
+
+## DEC-022: Cambio de contraseña autenticado
+
+Decision: exigir la contraseña actual y una nueva de al menos 8 caracteres. Actualizar el hash Argon2id, revocar todas las demas sesiones y auditar `PASSWORD_CHANGED` en una transaccion. La sesion que realiza el cambio permanece activa con su vencimiento original. No se implementa recuperacion de contraseña.
+
+Motivo: permite actualizar credenciales desde Perfil sin exponer hashes ni mantener sesiones antiguas activas.
+
+## DEC-023: Convencion de cantidades de inventario
+
+Decision: `quantity` en cada movimiento y transferencia es estrictamente positiva, con hasta tres decimales. `direction` (`IN`/`OUT`) indica el efecto sobre el saldo; `type` describe la causa (`INITIAL`, `ENTRY`, `ISSUE`, `ADJUSTMENT`, `TRANSFER`). El saldo es un decimal no negativo. Un ajuste manual expresa incremento o decremento mediante direccion y requiere motivo; no asigna un saldo absoluto.
+
+Motivo: evita mezclar signos y permite reconstruir el saldo desde movimientos sin ambiguedad. `InventoryBalance` es una proyeccion transaccional para consultas, nunca se modifica por un endpoint de asignacion directa.
+
+## DEC-024: Concurrencia y transferencia atomica
+
+Decision: usar transacciones Prisma/PostgreSQL. Para salidas, ajustes negativos y origen de transferencias, efectuar un `UPDATE` condicional con `quantity >= cantidad` y decremento atomico; si no actualiza una fila, rechazar la operacion. Para entradas usar incremento atomico por clave unica de balance. Las transferencias bloquean los balances existentes en orden estable para evitar deadlocks entre direcciones opuestas. Cada transferencia de Fase 4 mueve un producto entre dos bodegas, crea dos movimientos y se completa en una sola transaccion. No hay transferencias pendientes ni configuracion de stock negativo.
+
+Motivo: el bloqueo de fila implicito del `UPDATE` condicional evita doble descuento y saldos negativos bajo concurrencia, sin Redis ni bloqueo distribuido. La clave unica `(tenantId, warehouseId, productId)` impide saldos duplicados.

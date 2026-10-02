@@ -3,13 +3,13 @@ import { LoadingState } from '../components/ui/States';
 import { Permission } from '../lib/permissions';
 import { HealthPage } from '../features/health/HealthPage';
 import { DashboardPage } from '../pages/DashboardPage';
-import {
-  InventoryPage,
-  MovementsPage,
-  SuppliersPage,
-  WarehousesPage,
-} from '../pages/modulePages';
-import { ProductsPage } from '../pages/ProductsPage';
+import { BranchesPage } from '../pages/catalog/BranchesPage';
+import { CategoriesPage } from '../pages/catalog/CategoriesPage';
+import { CompaniesPage } from '../pages/catalog/CompaniesPage';
+import { ProductsPage } from '../pages/catalog/ProductsPage';
+import { SuppliersPage } from '../pages/catalog/SuppliersPage';
+import { WarehousesPage } from '../pages/catalog/WarehousesPage';
+import { InventoryPage, MovementsPage } from '../pages/modulePages';
 import { ProfilePage } from '../pages/ProfilePage';
 import { ReportsPage } from '../pages/ReportsPage';
 import { SettingsPage } from '../pages/SettingsPage';
@@ -35,18 +35,47 @@ export type AppRoute = {
 /** Rutas autenticadas, dentro del AppShell. */
 export const appRoutes: AppRoute[] = [
   { path: '/', title: 'Dashboard', render: () => <DashboardPage /> },
-  { path: '/productos', title: 'Productos', render: () => <ProductsPage /> },
+  {
+    path: '/productos',
+    title: 'Productos',
+    render: () => <ProductsPage />,
+    permission: Permission.ProductsRead,
+  },
+  {
+    path: '/categorias',
+    title: 'Categorías',
+    render: () => <CategoriesPage />,
+    permission: Permission.CategoriesRead,
+  },
   { path: '/inventario', title: 'Inventario', render: () => <InventoryPage /> },
   {
     path: '/movimientos',
     title: 'Movimientos',
     render: () => <MovementsPage />,
   },
-  { path: '/bodegas', title: 'Bodegas', render: () => <WarehousesPage /> },
+  {
+    path: '/bodegas',
+    title: 'Bodegas',
+    render: () => <WarehousesPage />,
+    permission: Permission.WarehousesRead,
+  },
+  {
+    path: '/empresas',
+    title: 'Empresas',
+    render: () => <CompaniesPage />,
+    permission: Permission.CompaniesRead,
+  },
+  {
+    path: '/sucursales',
+    title: 'Sucursales',
+    render: () => <BranchesPage />,
+    permission: Permission.BranchesRead,
+  },
   {
     path: '/proveedores',
     title: 'Proveedores',
     render: () => <SuppliersPage />,
+    permission: Permission.SuppliersRead,
   },
   { path: '/reportes', title: 'Reportes', render: () => <ReportsPage /> },
   {

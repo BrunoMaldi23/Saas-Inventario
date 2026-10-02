@@ -90,7 +90,7 @@ Estado: implementada y validada localmente; la ejecucion del workflow en GitHub 
 
 Objetivo: operar stock con trazabilidad.
 
-Tareas candidatas:
+Tareas ejecutadas:
 
 - Stock inicial.
 - Entradas de inventario.
@@ -100,6 +100,8 @@ Tareas candidatas:
 - Transferencias entre bodegas.
 - Kardex o historial de movimientos.
 - Alertas de stock minimo.
+
+Tambien se cerro la deuda de cambio de contraseña de identidad antes de implementar inventario. Estado: implementada y validada localmente; queda pendiente la ejecucion de CI remoto al publicar. No se implementaron compras, ventas ni notificaciones asincronas.
 
 ## Fase 5: Reportes basicos
 

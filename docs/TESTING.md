@@ -119,6 +119,8 @@ Fase 4:
 - Movimientos y saldos probados.
 - Transferencias y ajustes probados.
 - Auditoria minima probada.
+- Suite HTTP con PostgreSQL real: stock inicial, entrada, salida, insuficiencia, ajustes con motivo, transferencia y rollback, aislamiento A/B, RBAC, historial paginado y filtros, stock minimo, productos/bodegas inactivos y operaciones concurrentes.
+- Cambio de contraseña: clave actual correcta/incorrecta, nueva clave invalida, hash Argon2id, auditoria y revocacion de otras sesiones.
 
 ## Riesgos de QA
 

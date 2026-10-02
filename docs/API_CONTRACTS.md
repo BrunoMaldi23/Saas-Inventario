@@ -1,4 +1,4 @@
-# Contratos API de identidad y catálogo (Fases 2 y 3)
+# Contratos API de identidad, catálogo e inventario (Fases 2–4)
 
 Base: `/api/v1`. JSON en requests y responses. Usar el mismo origen web/API (proxy `/api` de Vite en desarrollo) y `credentials: 'same-origin'`. Los tipos y funciones están exportados desde `@inventario/types`, `@inventario/validation` y `@inventario/api-client`.
 
@@ -67,3 +67,33 @@ Cada item incluye `id`, `status`, `createdAt`, `updatedAt` y los campos del recu
 Company `taxId`, Product `sku`/`barcode` y Warehouse `name` por sucursal son únicos dentro del tenant aun si el registro está inactivo. Category `name` es único entre raíces del tenant y entre hijos del mismo padre; nombres de otro nivel o tenant pueden repetirse. La unicidad de nombres distingue mayúsculas. Una referencia nueva o cambiada debe apuntar a un padre activo del tenant activo. Categorías no pueden formar ciclos. Desactivar un padre no desactiva automáticamente los hijos ya existentes.
 
 Errores: 400 payload, query o UUID inválidos; 401 falta/expiración de sesión; 403 falta tenant activo o permiso; 404 ID no visible, referencia ausente/inactiva o de otro tenant; 409 valor único duplicado. El backend aplica permisos sobre la sesión, nunca sobre valores enviados por el frontend.
+
+## Cambio de contraseña autenticado
+
+`POST /api/v1/auth/change-password` requiere sesión, pero no tenant activo ni permiso de catálogo. Body: `{ "currentPassword": "...", "newPassword": "mínimo 8 caracteres" }`; respuesta 204 sin body. La contraseña nueva admite hasta 1024 caracteres. Una contraseña actual incorrecta devuelve 401 `Invalid credentials`; un body inválido devuelve 400. La sesión actual permanece activa con su vencimiento original; las demás sesiones del usuario se revocan. No se devuelve el hash ni se implementa recuperación de contraseña. El cliente exporta `changePassword`.
+
+## Inventario y movimientos (Fase 4)
+
+Todas las rutas siguientes requieren sesión y tenant activo. `tenantId` se obtiene exclusivamente del contexto autenticado y se rechaza en payloads. Las cantidades son strings decimales **positivos**, con hasta tres decimales; `direction` indica `IN` o `OUT`. Un balance ausente equivale a cero para una salida. No existe endpoint para asignar directamente el saldo.
+
+| Método y ruta | Body / query | Respuesta | Permiso |
+| --- | --- | --- | --- |
+| `GET /inventory` | `page`, `pageSize`, `productId`, `warehouseId`, `lowStock` | `CatalogPage<InventoryBalanceView>` | `inventory:read` |
+| `GET /inventory/movements` | `page`, `pageSize`, `productId`, `warehouseId`, `type`, `from`, `to`, `createdByUserId` | `CatalogPage<StockMovementView>` | `inventory:read` |
+| `POST /inventory/initial-stock` | `StockOperationRequest` | `StockOperationResponse`, 201 | `inventory:write` |
+| `POST /inventory/entries` | `StockOperationRequest` | `StockOperationResponse`, 201 | `inventory:write` |
+| `POST /inventory/issues` | `StockOperationRequest` | `StockOperationResponse`, 201 | `inventory:write` |
+| `POST /inventory/adjustments` | `StockAdjustmentRequest` | `StockOperationResponse`, 201 | `inventory:adjust` |
+| `GET /transfers` | `page`, `pageSize`, `productId` | `CatalogPage<StockTransferView>` | `inventory:read` |
+| `GET /transfers/:id` | — | `StockTransferView` | `inventory:read` |
+| `POST /transfers` | `StockTransferRequest` | `StockTransferResponse`, 201 | `inventory:transfer` |
+
+`StockOperationRequest` contiene `{ productId, warehouseId, quantity, reason? }`. Stock inicial crea el primer balance de ese par producto-bodega; repetirlo responde 409. Entrada incrementa y salida decrementa. `StockAdjustmentRequest` agrega `direction` y exige `reason` no vacío (máximo 500 caracteres); ajusta por una diferencia, no fija un saldo absoluto. `StockTransferRequest` contiene `{ productId, fromWarehouseId, toWarehouseId, quantity, reason? }`; origen y destino deben diferir. Cada transferencia mueve un solo producto y se completa de forma atómica, con movimientos `TRANSFER/OUT` y `TRANSFER/IN` vinculados por `transferId`. No hay estado pendiente.
+
+`InventoryBalanceView` contiene `id`, `productId`, `warehouseId`, `quantity`, `product: { id, name, sku, minStock }`, `warehouse: { id, name }`, `createdAt` y `updatedAt`. `StockMovementView` contiene `id`, `productId`, `warehouseId`, `transferId` nullable, `type` (`INITIAL`, `ENTRY`, `ISSUE`, `ADJUSTMENT`, `TRANSFER`), `direction`, `quantity`, `reason` nullable, `createdByUserId` y `createdAt`. `StockTransferView` contiene `id`, `productId`, `fromWarehouseId`, `toWarehouseId`, `quantity`, `status: "COMPLETED"`, `reason` nullable, `createdByUserId`, `createdAt` y `completedAt`. `StockOperationResponse` es `{ balance, movement }`; `StockTransferResponse` es `{ transfer, source, destination, movements: [salida, entrada] }`. Fechas usan ISO 8601 y cantidades son strings.
+
+La paginación comienza en `page=1`, usa `pageSize=20` por defecto y limita `pageSize` a 100. Los movimientos y transferencias se ordenan por fecha e ID descendentes. `from` y `to` son fechas ISO 8601 con zona; ambos extremos son inclusivos. `lowStock=true` en `GET /inventory` devuelve balances **existentes** cuya cantidad es menor o igual que `Product.minStock` cuando está configurado. No genera notificaciones ni incluye productos sin fila de balance.
+
+Owner, Admin e InventoryManager tienen los cuatro permisos. BranchManager tiene lectura, escritura y transferencia, sin ajuste. Viewer solo lectura. Un producto, bodega o padre operativo inactivo no puede usarse en nuevas operaciones. Errores principales: 400 payload o query inválidos; 401 sin sesión; 403 sin tenant o permiso; 404 producto/bodega/transferencia no visible; 409 stock insuficiente o stock inicial ya existente. Los permisos nunca se toman del frontend.
+
+`@inventario/types`, `@inventario/validation` y `@inventario/api-client` exportan estos contratos y funciones `listInventory`, `listMovements`, `recordInitialStock`, `recordEntry`, `recordIssue`, `recordAdjustment`, `listTransfers`, `getTransfer` y `createTransfer`.

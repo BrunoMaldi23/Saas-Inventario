@@ -523,4 +523,66 @@ describe('identity, tenancy and access control', () => {
       });
     }
   });
+
+  it('changes password, audits it, and revokes other sessions', async () => {
+    const oldPassword = `old-${suffix}`;
+    const newPassword = `new-${suffix}`;
+    const email = `password-${suffix}@example.test`;
+    const user = await database.user.create({
+      data: {
+        email,
+        name: 'Password User',
+        passwordHash: await hashPassword(oldPassword),
+      },
+    });
+    await database.tenantMembership.create({
+      data: { tenantId: tenantA, userId: user.id, roleId: viewerRoleA },
+    });
+    const current = request.agent(app.getHttpServer());
+    const other = request.agent(app.getHttpServer());
+    await current
+      .post('/api/v1/auth/login')
+      .send({ email, password: oldPassword })
+      .expect(200);
+    await other
+      .post('/api/v1/auth/login')
+      .send({ email, password: oldPassword })
+      .expect(200);
+    await current
+      .post('/api/v1/auth/change-password')
+      .send({ currentPassword: 'wrong-password', newPassword })
+      .expect(401);
+    await current
+      .post('/api/v1/auth/change-password')
+      .send({ currentPassword: oldPassword, newPassword: 'short' })
+      .expect(400);
+    const before = await database.user.findUniqueOrThrow({
+      where: { id: user.id },
+    });
+    await current
+      .post('/api/v1/auth/change-password')
+      .send({ currentPassword: oldPassword, newPassword })
+      .expect(204);
+    const after = await database.user.findUniqueOrThrow({
+      where: { id: user.id },
+    });
+    expect(after.passwordHash).toMatch(/^\$argon2id\$/);
+    expect(after.passwordHash).not.toBe(before.passwordHash);
+    expect(after.passwordHash).not.toBe(newPassword);
+    await current.get('/api/v1/auth/me').expect(200);
+    await other.get('/api/v1/auth/me').expect(401);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({ email, password: oldPassword })
+      .expect(401);
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({ email, password: newPassword })
+      .expect(200);
+    expect(
+      await database.auditLog.count({
+        where: { actorUserId: user.id, action: 'PASSWORD_CHANGED' },
+      }),
+    ).toBe(1);
+  });
 });

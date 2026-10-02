@@ -1,5 +1,6 @@
 import { z } from 'zod';
 export * from './catalog.js';
+export * from './inventory.js';
 
 export const healthResponseSchema = z.object({ status: z.literal('ok') });
 export const databaseHealthResponseSchema = z.object({
@@ -16,6 +17,12 @@ export const loginRequestSchema = z
       .max(254)
       .transform((email) => email.toLowerCase()),
     password: z.string().min(1).max(1024),
+  })
+  .strict();
+export const changePasswordRequestSchema = z
+  .object({
+    currentPassword: z.string().min(1).max(1024),
+    newPassword: z.string().min(8).max(1024),
   })
   .strict();
 export const selectTenantRequestSchema = z.object({ tenantId: uuid }).strict();

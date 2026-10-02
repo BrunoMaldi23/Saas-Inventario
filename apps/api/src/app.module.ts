@@ -25,6 +25,11 @@ import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { PermissionGuard } from './permission.guard';
 import { TenantGuard } from './tenant.guard';
+import { InventoryService } from './inventory.service';
+import {
+  InventoryController,
+  TransfersController,
+} from './inventory.controller';
 
 @Module({
   controllers: [
@@ -40,6 +45,8 @@ import { TenantGuard } from './tenant.guard';
     ProductsController,
     SuppliersController,
     WarehousesController,
+    InventoryController,
+    TransfersController,
   ],
   providers: [
     DatabaseService,
@@ -47,6 +54,7 @@ import { TenantGuard } from './tenant.guard';
     AuthService,
     AdminService,
     CatalogService,
+    InventoryService,
     { provide: APP_GUARD, useClass: CsrfGuard },
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: TenantGuard },

@@ -14,7 +14,7 @@ import {
   Notice,
   Skeleton,
 } from '../components/ui/States';
-import { useToast } from '../components/ui/Toast';
+import { useToast } from '../components/ui/toastContext';
 
 type Row = { id: string; name: string };
 const columns: Column<Row>[] = [

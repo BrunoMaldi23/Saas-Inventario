@@ -23,17 +23,58 @@ export const navigation: NavGroup[] = [
     items: [{ label: 'Dashboard', to: '/', icon: 'dashboard' }],
   },
   {
-    label: 'Inventario',
+    label: 'Catálogo',
     items: [
-      { label: 'Productos', to: '/productos', icon: 'box' },
-      { label: 'Inventario', to: '/inventario', icon: 'layers' },
-      { label: 'Movimientos', to: '/movimientos', icon: 'movements' },
-      { label: 'Bodegas', to: '/bodegas', icon: 'warehouse' },
+      {
+        label: 'Productos',
+        to: '/productos',
+        icon: 'box',
+        permission: Permission.ProductsRead,
+      },
+      {
+        label: 'Categorías',
+        to: '/categorias',
+        icon: 'tag',
+        permission: Permission.CategoriesRead,
+      },
+      {
+        label: 'Proveedores',
+        to: '/proveedores',
+        icon: 'truck',
+        permission: Permission.SuppliersRead,
+      },
     ],
   },
   {
-    label: 'Abastecimiento',
-    items: [{ label: 'Proveedores', to: '/proveedores', icon: 'truck' }],
+    label: 'Inventario',
+    items: [
+      // Fase 4: aún sin permiso publicado; se muestran como módulos en preparación.
+      { label: 'Inventario', to: '/inventario', icon: 'layers' },
+      { label: 'Movimientos', to: '/movimientos', icon: 'movements' },
+      {
+        label: 'Bodegas',
+        to: '/bodegas',
+        icon: 'warehouse',
+        permission: Permission.WarehousesRead,
+      },
+    ],
+  },
+  {
+    label: 'Organización',
+    items: [
+      {
+        label: 'Empresas',
+        to: '/empresas',
+        icon: 'building',
+        permission: Permission.CompaniesRead,
+      },
+      {
+        label: 'Sucursales',
+        to: '/sucursales',
+        icon: 'mapPin',
+        permission: Permission.BranchesRead,
+      },
+    ],
   },
   {
     label: 'Análisis',

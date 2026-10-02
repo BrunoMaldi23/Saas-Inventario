@@ -72,38 +72,3 @@ export function MovementsPage() {
     />
   );
 }
-
-export function WarehousesPage() {
-  return (
-    <ModuleListPage
-      title="Bodegas"
-      description="Ubicaciones donde se almacena el inventario."
-      phase={3}
-      icon="warehouse"
-      emptyTitle="No hay bodegas creadas"
-      emptyDescription="Crea tu primera bodega para comenzar a registrar stock."
-      primaryAction="Nueva bodega"
-    />
-  );
-}
-
-export function SuppliersPage() {
-  return (
-    <ModuleListPage
-      title="Proveedores"
-      description="Empresas y contactos que abastecen tu inventario."
-      phase={3}
-      icon="truck"
-      emptyTitle="No hay proveedores registrados"
-      emptyDescription="Los proveedores te permitirán asociar recepciones de compra."
-      primaryAction="Nuevo proveedor"
-      filters={
-        <SearchInput
-          label="Buscar proveedor"
-          placeholder="Buscar proveedor"
-          disabled
-        />
-      }
-    />
-  );
-}

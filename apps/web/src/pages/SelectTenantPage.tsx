@@ -6,10 +6,7 @@ import { Spinner } from '../components/ui/Spinner';
 import { EmptyState, Notice } from '../components/ui/States';
 import { apiErrorMessage, classifyApiError } from '../lib/apiError';
 import { navigate } from '../lib/router';
-import {
-  useAuthenticatedSession,
-  useSession,
-} from '../session/SessionProvider';
+import { useAuthenticatedSession, useSession } from '../session/sessionContext';
 import { roleLabel } from '../session/types';
 
 export function SelectTenantPage() {

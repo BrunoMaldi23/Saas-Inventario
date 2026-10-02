@@ -10,7 +10,8 @@ import { navigate, usePathname } from '../lib/router';
 import { LoginPage } from '../pages/LoginPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { SelectTenantPage } from '../pages/SelectTenantPage';
-import { SessionProvider, useSession } from '../session/SessionProvider';
+import { SessionProvider } from '../session/SessionProvider';
+import { useSession } from '../session/sessionContext';
 import { appRoutes, LOGIN_PATH, SELECT_TENANT_PATH } from './routes';
 
 function Redirect({ to }: { to: string }) {

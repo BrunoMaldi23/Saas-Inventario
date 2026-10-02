@@ -7,11 +7,11 @@ import {
   useActiveTenant,
   useAuthenticatedSession,
   useSession,
-} from '../../session/SessionProvider';
+} from '../../session/sessionContext';
 import { roleLabel } from '../../session/types';
 import { Icon } from '../ui/Icon';
 import { Spinner } from '../ui/Spinner';
-import { useToast } from '../ui/Toast';
+import { useToast } from '../ui/toastContext';
 
 /** Muestra la empresa activa y permite cambiarla si hay varias. */
 export function TenantSwitcher() {

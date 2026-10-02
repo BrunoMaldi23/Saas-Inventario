@@ -9,6 +9,18 @@ export const Permission = {
   UsersRead: 'users:read',
   UsersCreate: 'users:create',
   MembershipsManage: 'memberships:manage',
+  ProductsRead: 'products:read',
+  ProductsWrite: 'products:write',
+  WarehousesRead: 'warehouses:read',
+  WarehousesWrite: 'warehouses:write',
+  SuppliersRead: 'suppliers:read',
+  SuppliersWrite: 'suppliers:write',
+  CategoriesRead: 'categories:read',
+  CategoriesWrite: 'categories:write',
+  CompaniesRead: 'companies:read',
+  CompaniesWrite: 'companies:write',
+  BranchesRead: 'branches:read',
+  BranchesWrite: 'branches:write',
 } as const;
 
 /** Sin permiso requerido el elemento es visible para cualquier sesión. */

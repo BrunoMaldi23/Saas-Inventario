@@ -12,6 +12,7 @@ import {
 import type { Response } from 'express';
 import type { AuthSessionResponse, TenantsResponse } from '@inventario/types';
 import {
+  changePasswordRequestSchema,
   loginRequestSchema,
   selectTenantRequestSchema,
 } from '@inventario/validation';
@@ -55,6 +56,20 @@ export class AuthController {
   async me(@Req() request: AccessRequest): Promise<AuthSessionResponse> {
     if (!request.auth) throw new UnauthorizedException();
     return this.authService.me(request.auth);
+  }
+
+  @NoTenant()
+  @Post('change-password')
+  @HttpCode(204)
+  async changePassword(
+    @Req() request: AccessRequest,
+    @Body() body: unknown,
+  ): Promise<void> {
+    if (!request.auth) throw new UnauthorizedException();
+    await this.authService.changePassword(
+      request.auth,
+      parseBody(changePasswordRequestSchema, body),
+    );
   }
 
   @NoTenant()

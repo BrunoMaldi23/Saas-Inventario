@@ -1,25 +1,10 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import { cx } from '../../lib/cx';
 import { IconButton } from './Button';
 import { Icon, type IconName } from './Icon';
-
-type ToastTone = 'success' | 'info' | 'warning' | 'danger';
+import { ToastContext, type ToastTone } from './toastContext';
 
 type Toast = { id: number; tone: ToastTone; message: string };
-
-type ToastContextValue = {
-  notify: (message: string, tone?: ToastTone) => void;
-};
-
-const ToastContext = createContext<ToastContextValue | null>(null);
 
 const icons: Record<ToastTone, IconName> = {
   success: 'checkCircle',
@@ -67,11 +52,4 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       </div>
     </ToastContext.Provider>
   );
-}
-
-export function useToast(): ToastContextValue {
-  const context = useContext(ToastContext);
-  if (!context)
-    throw new Error('useToast debe usarse dentro de <ToastProvider>.');
-  return context;
 }

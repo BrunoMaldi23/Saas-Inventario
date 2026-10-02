@@ -195,7 +195,9 @@
 }
 
 .control:disabled,
-.control:read-only {
+/* :read-only también coincide con <select>; se limita a campos de texto. */
+input.control:read-only,
+textarea.control:read-only {
   background: var(--gray-50);
   color: var(--color-text-muted);
 }
@@ -1294,4 +1296,128 @@
   border-radius: var(--radius-sm);
   background: var(--gray-100);
   color: var(--gray-700);
+}
+
+/* ===== Catálogo: acciones, paginación, textarea ===== */
+.row-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.pagination__summary,
+.pagination__page {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.control--textarea {
+  height: auto;
+  min-height: 5rem;
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
+}
+
+@media (max-width: 639px) {
+  .pagination {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .pagination__controls {
+    justify-content: space-between;
+  }
+
+  /* En tarjetas, las acciones ocupan una fila propia con objetivos táctiles. */
+  .table td:has(.row-actions) {
+    padding-top: var(--space-2);
+  }
+
+  .table td:has(.row-actions)::before {
+    content: none;
+  }
+
+  .row-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .row-actions .btn {
+    flex: 1;
+    height: var(--touch-target);
+  }
+}
+
+/* ===== Configuración ===== */
+.settings-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--space-3);
+}
+
+.settings-link {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  transition:
+    border-color var(--transition),
+    background var(--transition);
+}
+
+.settings-link:hover {
+  border-color: var(--color-primary);
+  background: var(--brand-50);
+  text-decoration: none;
+}
+
+.settings-link__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  background: var(--brand-50);
+  color: var(--brand-600);
+  flex-shrink: 0;
+}
+
+.settings-link__label {
+  display: block;
+  font-weight: 600;
+}
+
+.settings-link__description {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Códigos (SKU, etc.) no se cortan en guiones. */
+.table code {
+  white-space: nowrap;
 }

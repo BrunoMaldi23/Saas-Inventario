@@ -25,13 +25,16 @@ src/
 | Ruta                   | Pantalla                           |
 | ---------------------- | ---------------------------------- |
 | `/`                    | Dashboard                          |
-| `/productos`           | Productos (vista previa con mock)  |
+| `/productos`           | Productos (`products:read`)        |
+| `/categorias`          | Categorías (`categories:read`)     |
 | `/inventario`          | Inventario                         |
 | `/movimientos`         | Movimientos                        |
-| `/bodegas`             | Bodegas                            |
-| `/proveedores`         | Proveedores                        |
+| `/bodegas`             | Bodegas (`warehouses:read`)        |
+| `/empresas`            | Empresas (`companies:read`)        |
+| `/sucursales`          | Sucursales (`branches:read`)       |
+| `/proveedores`         | Proveedores (`suppliers:read`)     |
 | `/reportes`            | Reportes                           |
-| `/usuarios`            | Usuarios                           |
+| `/usuarios`            | Usuarios (`users:read`)            |
 | `/configuracion`       | Configuración                      |
 | `/perfil`              | Mi perfil                          |
 | `/sistema`             | Estado del sistema (health)        |
@@ -49,11 +52,18 @@ Las guardas en `app/App.tsx` solo ordenan la navegación; la autorización real 
 - **Permisos:** la navegación y las acciones se filtran con `activeTenant.permissions` (`lib/permissions.ts`, `app/navigation.ts`, `permission` en `app/routes.tsx`). Nunca se infieren del nombre del rol. El backend sigue siendo la autoridad.
 - **Tipos:** `lib/apiTypes.ts` toma los tipos de `@inventario/types` a través de las firmas de `@inventario/api-client`, porque `apps/web` aún no declara `@inventario/types` como dependencia directa.
 
-## Mocks (temporales)
+## Catálogo (Fase 3)
 
-| Archivo                        | Reemplazo                   |
-| ------------------------------ | --------------------------- |
-| `src/mocks/productsPreview.ts` | `GET` de productos (Fase 3) |
+- `features/catalog/CatalogListPage.tsx` resuelve listado, búsqueda (debounce), filtro de estado, paginación, estados de vista, creación, edición y activación/desactivación. Cada pantalla de `pages/catalog/` solo define columnas y formulario.
+- Las acciones de escritura se muestran con el permiso `*:write` del recurso; la lectura y la ruta usan `*:read`.
+- Formularios: `features/catalog/specs.ts` (validación según el contrato, con tests) y `useEntityForm` (el PATCH envía solo los campos cambiados).
+- Referencias (categoría de un producto, sucursal de una bodega…): `useCatalogOptions` carga una página de hasta 100 registros.
+- Errores: 401 lleva al login, 403 muestra "sin permiso", 404 y 409 muestran mensajes propios de cada recurso, 400 indica que se revisen los datos y un error de red ofrece reintentar.
+- El stock disponible no se muestra hasta que exista inventario (Fase 4); `minStock` es solo un umbral.
+
+## Mocks
+
+No quedan mocks: todas las pantallas con datos usan la API real. Inventario, Movimientos y Reportes siguen siendo pantallas en preparación, sin datos.
 
 ## Proxy de desarrollo
 
@@ -68,7 +78,7 @@ pnpm --filter @inventario/web test       # node:test (sin dependencias extra)
 pnpm --filter @inventario/web build
 ```
 
-Los tests usan `node --test` con el type stripping nativo de Node 22: cubren lógica pura (`lib/`, `session/`, `app/navigation.ts`); la sesión se prueba con un cliente falso inyectado. Por eso los módulos que importan los tests usan imports con extensión `.ts`.
+Los tests usan `node --test` con el type stripping nativo de Node 22: cubren lógica pura (`lib/`, `session/`, `app/navigation.ts`, validaciones y lógica de catálogo); la sesión se prueba con un cliente falso inyectado. Por eso los módulos que importan los tests usan imports con extensión `.ts`.
 
 ## Convenciones
 

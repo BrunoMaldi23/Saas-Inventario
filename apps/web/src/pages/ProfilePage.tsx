@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Field, Input } from '../components/ui/Field';
 import { PageHeader } from '../components/ui/PageHeader';
-import { useAuthenticatedSession } from '../session/SessionProvider';
+import { useAuthenticatedSession } from '../session/sessionContext';
 import { roleLabel } from '../session/types';
 
 const dateTimeFormat = new Intl.DateTimeFormat('es-CL', {

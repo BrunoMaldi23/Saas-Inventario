@@ -1,41 +1,15 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react';
-import type { ActiveTenant, LoginRequest } from '../lib/apiTypes';
+import type { LoginRequest } from '../lib/apiTypes';
 import { apiErrorMessage, classifyApiError } from '../lib/apiError';
 import { hasPermission } from '../lib/permissions';
 import { sessionSource } from './sessionSource';
-import type { Session } from './types';
-
-/** Motivo por el que no hay sesión; define el mensaje del login. */
-export type SignedOutReason = 'initial' | 'signed-out' | 'expired';
-
-type SessionState =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'unauthenticated'; reason: SignedOutReason }
-  | { status: 'authenticated'; session: Session };
-
-type SessionContextValue = {
-  state: SessionState;
-  activeTenant: ActiveTenant | null;
-  /** Permiso efectivo en el tenant activo (solo para decidir qué mostrar). */
-  can: (permission: string | undefined) => boolean;
-  reload: () => void;
-  login: (credentials: LoginRequest) => Promise<void>;
-  switchTenant: (tenantId: string) => Promise<void>;
-  logout: () => Promise<void>;
-  /** Llamar cuando una petición de datos responde 401. */
-  expireSession: () => void;
-};
-
-const SessionContext = createContext<SessionContextValue | null>(null);
+import { SessionContext, type SessionState } from './sessionContext';
 
 // setTimeout acepta como máximo ~24,8 días.
 const MAX_TIMEOUT_MS = 2_147_483_647;
@@ -171,28 +145,4 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   return (
     <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
   );
-}
-
-export function useSession(): SessionContextValue {
-  const context = useContext(SessionContext);
-  if (!context) {
-    throw new Error('useSession debe usarse dentro de <SessionProvider>.');
-  }
-  return context;
-}
-
-/** Atajo para componentes que solo se montan con sesión autenticada. */
-export function useAuthenticatedSession(): Session {
-  const { state } = useSession();
-  if (state.status !== 'authenticated') {
-    throw new Error('Se requiere una sesión autenticada.');
-  }
-  return state.session;
-}
-
-/** Atajo para componentes dentro del AppShell (tenant activo garantizado). */
-export function useActiveTenant(): ActiveTenant {
-  const { activeTenant } = useSession();
-  if (!activeTenant) throw new Error('Se requiere un tenant activo.');
-  return activeTenant;
 }

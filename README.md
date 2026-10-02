@@ -1,6 +1,6 @@
 # InventarioSaaS
 
-SaaS de inventario multi-tenant. Las Fases 1 a 3 contienen la fundación técnica, identidad, control de acceso y catálogo operacional. Aún no incluyen stock ni movimientos.
+SaaS de inventario multi-tenant. Las Fases 1 a 4 contienen fundación técnica, identidad, catálogo y movimientos de stock transaccionales. Compras y ventas aún no están implementadas.
 
 ## Stack
 
@@ -36,7 +36,7 @@ pnpm db:deploy
 pnpm db:status
 ```
 
-Detén la API antes de ejecutar `pnpm prisma:generate` en Windows. El contenedor conserva datos en un volumen de Docker. Las migraciones crean `SystemMetadata`, identidad y el catálogo de Fase 3. También puedes usar `pnpm prisma:validate`, `pnpm prisma:migrate` y `pnpm db:status`.
+Detén la API antes de ejecutar `pnpm prisma:generate` en Windows. El contenedor conserva datos en un volumen de Docker. Las migraciones crean `SystemMetadata`, identidad, catálogo e inventario. También puedes usar `pnpm prisma:validate`, `pnpm prisma:migrate` y `pnpm db:status`.
 
 Para crear el primer tenant y Owner, define `BOOTSTRAP_EMAIL`, `BOOTSTRAP_PASSWORD` (mínimo 8 caracteres) y `BOOTSTRAP_TENANT_NAME` solo en tu `.env` local y ejecuta:
 
@@ -54,7 +54,7 @@ pnpm dev
 
 API: <http://localhost:3000/api/v1/health> y <http://localhost:3000/api/v1/health/database>. Web: <http://localhost:5173>. Si cambias `API_PORT` o `WEB_PORT`, usa los valores de `.env`. Vite envía las solicitudes `/api` a NestJS durante el desarrollo.
 
-Los contratos de identidad y catálogo están en [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md). El login deja el tenant sin seleccionar; el cliente debe consultar `/tenants` y llamar a `/auth/select-tenant` antes de usar rutas comerciales.
+Los contratos de identidad, cambio de contraseña, catálogo e inventario están en [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md). El login deja el tenant sin seleccionar; el cliente debe consultar `/tenants` y llamar a `/auth/select-tenant` antes de usar rutas comerciales.
 
 También puedes ejecutar `pnpm --filter @inventario/api dev` y `pnpm --filter @inventario/web dev` por separado después de `pnpm build`.
 
@@ -68,4 +68,4 @@ pnpm build
 pnpm format:check
 ```
 
-Los tests de identidad y catálogo usan PostgreSQL real y requieren Compose y las migraciones aplicadas. El workflow de CI levanta PostgreSQL, genera Prisma Client, aplica migraciones y ejecuta lint, typecheck, tests y build, sin despliegue.
+Los tests de identidad, catálogo e inventario usan PostgreSQL real y requieren Compose y las migraciones aplicadas. El workflow de CI levanta PostgreSQL, genera Prisma Client, aplica migraciones y ejecuta lint, typecheck, tests y build, sin despliegue.

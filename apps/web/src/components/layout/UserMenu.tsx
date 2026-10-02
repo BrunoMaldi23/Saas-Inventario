@@ -4,11 +4,11 @@ import { useDismiss } from '../../lib/useDismiss';
 import {
   useAuthenticatedSession,
   useSession,
-} from '../../session/SessionProvider';
+} from '../../session/sessionContext';
 import { Avatar } from '../ui/Avatar';
 import { ConfirmDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
-import { useToast } from '../ui/Toast';
+import { useToast } from '../ui/toastContext';
 
 export function UserMenu() {
   const { user } = useAuthenticatedSession();

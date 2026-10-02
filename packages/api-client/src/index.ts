@@ -13,7 +13,19 @@ import type {
   CreateSupplier,
   Warehouse,
   CreateWarehouse,
+  InventoryQuery,
+  MovementQuery,
+  TransferQuery,
+  StockOperationRequest,
+  StockAdjustmentRequest,
+  StockTransferRequest,
+  StockOperationResponse,
+  StockTransferResponse,
+  InventoryBalanceView,
+  StockMovementView,
+  StockTransferView,
   AuthSessionResponse,
+  ChangePasswordRequest,
   ChangeMembershipStatusRequest,
   ChangeRoleRequest,
   CreateMembershipRequest,
@@ -36,6 +48,12 @@ import {
   productSchema,
   supplierSchema,
   warehouseSchema,
+  inventoryPageSchema,
+  movementPageSchema,
+  transferPageSchema,
+  transferViewSchema,
+  stockOperationResponseSchema,
+  stockTransferResponseSchema,
   authSessionResponseSchema,
   databaseHealthResponseSchema,
   healthResponseSchema,
@@ -82,6 +100,12 @@ export async function login(input: LoginRequest): Promise<AuthSessionResponse> {
 
 export async function logout(): Promise<void> {
   await requestJson('/api/v1/auth/logout', 'POST');
+}
+
+export async function changePassword(
+  input: ChangePasswordRequest,
+): Promise<void> {
+  await requestJson('/api/v1/auth/change-password', 'POST', input);
 }
 
 export async function getMe(): Promise<AuthSessionResponse> {
@@ -342,5 +366,79 @@ export async function updateWarehouse(
       'PATCH',
       input,
     ),
+  );
+}
+
+function inventoryPath(
+  path: string,
+  query: Record<string, string | number | boolean | undefined>,
+): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined) params.set(key, String(value));
+  }
+  const suffix = params.toString();
+  return suffix ? `${path}?${suffix}` : path;
+}
+
+export async function listInventory(
+  query: InventoryQuery = {},
+): Promise<CatalogPage<InventoryBalanceView>> {
+  return inventoryPageSchema.parse(
+    await requestJson(inventoryPath('/api/v1/inventory', query)),
+  );
+}
+export async function listMovements(
+  query: MovementQuery = {},
+): Promise<CatalogPage<StockMovementView>> {
+  return movementPageSchema.parse(
+    await requestJson(inventoryPath('/api/v1/inventory/movements', query)),
+  );
+}
+export async function recordInitialStock(
+  input: StockOperationRequest,
+): Promise<StockOperationResponse> {
+  return stockOperationResponseSchema.parse(
+    await requestJson('/api/v1/inventory/initial-stock', 'POST', input),
+  );
+}
+export async function recordEntry(
+  input: StockOperationRequest,
+): Promise<StockOperationResponse> {
+  return stockOperationResponseSchema.parse(
+    await requestJson('/api/v1/inventory/entries', 'POST', input),
+  );
+}
+export async function recordIssue(
+  input: StockOperationRequest,
+): Promise<StockOperationResponse> {
+  return stockOperationResponseSchema.parse(
+    await requestJson('/api/v1/inventory/issues', 'POST', input),
+  );
+}
+export async function recordAdjustment(
+  input: StockAdjustmentRequest,
+): Promise<StockOperationResponse> {
+  return stockOperationResponseSchema.parse(
+    await requestJson('/api/v1/inventory/adjustments', 'POST', input),
+  );
+}
+export async function listTransfers(
+  query: TransferQuery = {},
+): Promise<CatalogPage<StockTransferView>> {
+  return transferPageSchema.parse(
+    await requestJson(inventoryPath('/api/v1/transfers', query)),
+  );
+}
+export async function getTransfer(id: string): Promise<StockTransferView> {
+  return transferViewSchema.parse(
+    await requestJson(`/api/v1/transfers/${encodeURIComponent(id)}`),
+  );
+}
+export async function createTransfer(
+  input: StockTransferRequest,
+): Promise<StockTransferResponse> {
+  return stockTransferResponseSchema.parse(
+    await requestJson('/api/v1/transfers', 'POST', input),
   );
 }

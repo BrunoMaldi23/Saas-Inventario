@@ -28,6 +28,12 @@ Definir un modelo conceptual inicial para PostgreSQL que soporte multi-tenancy, 
 
 La migracion `20261002140355_operational_catalog` agrega claves foraneas compuestas `(id, tenantId)` para Company→Branch, Category→Category/Product y Branch→Warehouse. SKU y barcode son unicos por tenant cuando existen; SKU se normaliza a mayusculas. `Company.taxId` es unico por tenant cuando existe; `Warehouse.name` es unico por tenant y sucursal. Dos indices parciales de PostgreSQL hacen unico `Category.name` entre raices del mismo tenant y entre hijos del mismo padre. Los nombres son sensibles a mayusculas para unicidad. `Product.minStock` es decimal no negativo de precision 18,3 y se comunica como string; no representa stock actual. La migracion agrega permisos del catalogo a roles de tenants existentes.
 
+## Modelos implementados en Fase 4
+
+`InventoryBalance` guarda un saldo decimal 18,3 no negativo por `(tenantId, warehouseId, productId)`. `StockMovement` registra cantidad estrictamente positiva, tipo, direccion, motivo opcional salvo ajustes, actor y fecha. `StockTransfer` representa la transferencia completada de un producto entre dos bodegas; sus dos movimientos enlazan mediante `transferId`. No se modelan transferencias pendientes ni items separados porque cada solicitud mueve un producto.
+
+La migracion `20261002150223_inventory_movements` crea restricciones CHECK de cantidades, direccion/tipo, motivo de ajuste, enlace de transferencia y bodegas distintas. Claves foraneas compuestas impiden relaciones comerciales cruzadas entre tenants. Indices cubren listados y filtros por tenant, producto, bodega, actor y fecha. La tabla de movimientos es el historial trazable; el balance es una proyeccion mantenida en la misma transaccion, nunca un campo de `Product`. No hay fila de balance hasta que se registra una operacion positiva. Un balance ausente se interpreta como cero para salidas, que por tanto se rechazan; la consulta de stock minimo considera balances existentes.
+
 ## Entidades conceptuales
 
 ### Tenant
