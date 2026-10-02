@@ -14,6 +14,14 @@ Definir un modelo conceptual inicial para PostgreSQL que soporte multi-tenancy, 
 - Evitar relaciones ambiguas.
 - No depender solo de validaciones de frontend.
 
+## Modelos implementados en Fase 2
+
+`User` es identidad global con email unico normalizado en backend, `passwordHash` Argon2id y estado. `Tenant` es la cuenta aislada. `TenantMembership` une usuario, tenant y rol, con unicidad `(tenantId, userId)`; la relacion compuesta `(roleId, tenantId)` impide asignar un rol de otro tenant. `Role` es propio de un tenant y tiene nombre unico por tenant. `Permission` contiene claves globales; `RolePermission` las asigna a roles. Los roles iniciales son Owner, Admin, InventoryManager, BranchManager y Viewer.
+
+`Session` guarda hash del token, usuario, tenant activo opcional y expiracion. `AuditLog` guarda actor, accion, entidad, tenant opcional (login antes de seleccionar tenant) y detalles sin secrets. Las acciones iniciales son LOGIN, LOGOUT, TENANT_SELECTED, USER_CREATED, MEMBERSHIP_CREATED, ROLE_CHANGED y MEMBERSHIP_STATUS_CHANGED. La migracion `20261002130910_identity_access` crea restricciones e indices para usuarios, membresias, sesiones y auditoria.
+
+`SystemMetadata` permanece global y tecnica. No se crean entidades comerciales en esta fase. La preparacion conceptual por sucursal sigue pendiente y no se agregan campos de sucursal sin flujo real.
+
 ## Entidades conceptuales
 
 ### Tenant

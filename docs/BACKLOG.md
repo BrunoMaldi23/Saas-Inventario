@@ -56,7 +56,7 @@ Estado: completada y validada localmente. El workflow de CI esta creado; su prim
 
 Objetivo: autenticar usuarios y aislar tenants.
 
-Tareas candidatas:
+Tareas ejecutadas:
 
 - Crear modelo de tenants, usuarios, roles y membresias.
 - Implementar login.
@@ -67,6 +67,8 @@ Tareas candidatas:
 - Implementar `TenantMembership` para usuarios con multiples tenants.
 - Crear auditoria basica para eventos sensibles.
 - Probar aislamiento entre tenants.
+
+Estado: implementada y validada localmente. La ejecucion del workflow en GitHub queda pendiente de publicar estos cambios.
 
 ## Fase 3: Catalogo operacional
 

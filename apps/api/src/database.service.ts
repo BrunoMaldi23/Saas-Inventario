@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
-  private readonly client = new PrismaClient();
+  readonly client = new PrismaClient();
 
   async isAvailable(): Promise<boolean> {
     try {

@@ -1,6 +1,6 @@
 # InventarioSaaS
 
-Fundación técnica de un SaaS de inventario multi-tenant. La Fase 1 contiene una API y una pantalla de diagnóstico de conectividad; todavía no incorpora lógica comercial ni autenticación.
+SaaS de inventario multi-tenant. Las Fases 1 y 2 contienen la fundación técnica, identidad, sesiones, selección de tenant y control de acceso. Aún no incluyen módulos comerciales.
 
 ## Stack
 
@@ -23,6 +23,7 @@ Desde la raíz del repositorio:
 ```powershell
 Copy-Item .env.example .env
 pnpm install
+pnpm db:generate
 ```
 
 En `.env`, cambia `POSTGRES_PASSWORD` por una contraseña local y actualiza la misma contraseña en `DATABASE_URL`. `POSTGRES_PORT` controla el puerto publicado en el equipo; si lo modificas, cambia también el puerto en `DATABASE_URL`. El puerto de ejemplo es `55432` para evitar conflictos con instalaciones locales de PostgreSQL. `.env` está excluido de Git.
@@ -35,7 +36,15 @@ pnpm db:deploy
 pnpm db:status
 ```
 
-`pnpm install` genera Prisma Client automáticamente. Si cambias el schema, detén la API y ejecuta `pnpm db:generate`. El contenedor conserva datos en un volumen de Docker. La única tabla de esta fase es `SystemMetadata`, utilizada como modelo técnico mínimo.
+Detén la API antes de ejecutar `pnpm db:generate` en Windows. El contenedor conserva datos en un volumen de Docker. Las migraciones crean `SystemMetadata` y los modelos de identidad de Fase 2.
+
+Para crear el primer tenant y Owner, define `BOOTSTRAP_EMAIL`, `BOOTSTRAP_PASSWORD` (mínimo 8 caracteres) y `BOOTSTRAP_TENANT_NAME` solo en tu `.env` local y ejecuta:
+
+```powershell
+pnpm db:bootstrap
+```
+
+El bootstrap es explícito y de una sola vez por email. No agregues credenciales reales al repositorio.
 
 ## Desarrollo
 
@@ -44,6 +53,8 @@ pnpm dev
 ```
 
 API: <http://localhost:3000/api/v1/health> y <http://localhost:3000/api/v1/health/database>. Web: <http://localhost:5173>. Si cambias `API_PORT` o `WEB_PORT`, usa los valores de `.env`. Vite envía las solicitudes `/api` a NestJS durante el desarrollo.
+
+Los contratos de login, sesión, selección de tenant y administración de membresías están en [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md). El login deja el tenant sin seleccionar; el cliente debe consultar `/tenants` y llamar a `/auth/select-tenant` antes de usar rutas administrativas.
 
 También puedes ejecutar `pnpm --filter @inventario/api dev` y `pnpm --filter @inventario/web dev` por separado después de `pnpm build`.
 
@@ -57,4 +68,4 @@ pnpm build
 pnpm format:check
 ```
 
-Los tests de API usan una sustitución del servicio de base de datos; la verificación real de PostgreSQL se hace levantando Compose, aplicando la migración y consultando `/api/v1/health/database`. El workflow de CI ejecuta instalación, lint, typecheck, tests y build, sin despliegue.
+Los tests de identidad usan PostgreSQL real y requieren Compose y las migraciones aplicadas. El workflow de CI levanta PostgreSQL, genera Prisma Client, aplica migraciones y ejecuta lint, typecheck, tests y build, sin despliegue.

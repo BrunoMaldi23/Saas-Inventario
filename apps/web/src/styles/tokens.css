@@ -1,0 +1,126 @@
+/*
+ * Design tokens. Todos los componentes consumen estas variables;
+ * no usar colores ni medidas literales fuera de este archivo.
+ */
+:root {
+  /* Neutros (slate) */
+  --gray-0: #ffffff;
+  --gray-25: #fbfcfd;
+  --gray-50: #f6f7f9;
+  --gray-100: #eef0f3;
+  --gray-200: #e1e4ea;
+  --gray-300: #cbd0d9;
+  --gray-400: #9aa3b2;
+  --gray-500: #6b7486;
+  --gray-600: #4f5869;
+  --gray-700: #3a4252;
+  --gray-800: #232a37;
+  --gray-900: #151a24;
+
+  /* Marca */
+  --brand-50: #eef3ff;
+  --brand-100: #dce6ff;
+  --brand-200: #b9ccff;
+  --brand-500: #3461e0;
+  --brand-600: #2650c4;
+  --brand-700: #1e3f9c;
+
+  /* Semánticos: fondo suave / borde / texto fuerte */
+  --success-bg: #e8f6ee;
+  --success-border: #b5e1c6;
+  --success-fg: #17663b;
+  --success-solid: #1f8a50;
+  --warning-bg: #fff6e0;
+  --warning-border: #f3d891;
+  --warning-fg: #8a5a00;
+  --warning-solid: #c98500;
+  --danger-bg: #fdecec;
+  --danger-border: #f5bcbc;
+  --danger-fg: #a61b1b;
+  --danger-solid: #d02a2a;
+  --info-bg: var(--brand-50);
+  --info-border: var(--brand-200);
+  --info-fg: var(--brand-700);
+
+  /* Roles de color */
+  --color-bg: var(--gray-50);
+  --color-surface: var(--gray-0);
+  --color-surface-muted: var(--gray-25);
+  --color-border: var(--gray-200);
+  --color-border-strong: var(--gray-300);
+  --color-text: var(--gray-900);
+  --color-text-muted: var(--gray-500);
+  --color-text-subtle: var(--gray-400);
+  --color-primary: var(--brand-500);
+  --color-primary-hover: var(--brand-600);
+  --color-focus: #3461e0;
+
+  /* Sidebar (oscuro, para separar navegación del contenido) */
+  --sidebar-bg: #121826;
+  --sidebar-fg: #c3cad8;
+  --sidebar-fg-muted: #7e889c;
+  --sidebar-hover: #1c2436;
+  --sidebar-active-bg: #23304d;
+  --sidebar-active-fg: #ffffff;
+  --sidebar-border: #232c3f;
+
+  /* Tipografía */
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --leading: 1.5;
+
+  /* Espaciado (base 4px) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Forma y elevación */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+  --shadow-xs: 0 1px 2px rgb(21 26 36 / 0.06);
+  --shadow-sm: 0 1px 3px rgb(21 26 36 / 0.08), 0 1px 2px rgb(21 26 36 / 0.04);
+  --shadow-lg: 0 12px 32px rgb(21 26 36 / 0.16), 0 2px 6px rgb(21 26 36 / 0.08);
+
+  /* Controles */
+  --control-height: 2.25rem;
+  --control-height-sm: 2rem;
+  --touch-target: 2.75rem;
+
+  /* Layout */
+  --sidebar-width: 15.5rem;
+  --topbar-height: 3.5rem;
+  --content-max: 90rem;
+
+  /* Capas */
+  --z-sidebar: 30;
+  --z-overlay: 40;
+  --z-popover: 50;
+  --z-toast: 70;
+
+  --transition: 150ms ease;
+}
+
+@media (pointer: coarse) {
+  :root {
+    --control-height: 2.75rem;
+    --control-height-sm: 2.5rem;
+  }
+}

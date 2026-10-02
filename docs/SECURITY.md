@@ -40,6 +40,8 @@ Estrategia inicial:
 - Sesiones con expiracion.
 - Proteccion contra enumeracion de usuarios en errores de login.
 
+Implementacion de Fase 2: cookie HTTP-only, `SameSite=Lax`, `Secure` en produccion y duracion de 8 horas. Se almacena en `Session` solo SHA-256 del token aleatorio; logout borra la sesion. Login invalido, usuario inexistente e inactivo responden igual y realizan verificacion Argon2id para reducir diferencias de tiempo. El frontend debe usar el mismo origen mediante proxy o reverse proxy. Un guard rechaza escrituras con `Origin`/`Referer` de otro origen y `Sec-Fetch-Site: cross-site`; `SameSite` agrega defensa adicional. No se habilita CORS entre origenes en esta fase.
+
 Pendiente de decision:
 
 - Necesidad de refresh token en MVP.
@@ -65,6 +67,8 @@ Reglas:
 - El control inicial por sucursal sera basico por tenant; las asignaciones por sucursal quedan preparadas para una fase futura.
 - Los cambios de roles deben auditarse.
 - El Owner no debe poder eliminar su unica via de administracion sin una regla de proteccion.
+
+Implementacion de Fase 2: cada request protegida revisa la sesion, estado de usuario y, cuando corresponde, tenant y membresia activos. Roles y permisos se consultan del servidor en cada request; no se aceptan permisos del cliente. Owner gestiona todas las identidades; Admin gestiona solo usuarios con roles operativos y no puede asignar ni modificar Owner o Admin. Los cambios que retirarian al ultimo Owner activo se rechazan dentro de transacciones serializables. Las operaciones de identidad relevantes escriben auditoria en la misma transaccion.
 
 ## Validacion de inputs
 

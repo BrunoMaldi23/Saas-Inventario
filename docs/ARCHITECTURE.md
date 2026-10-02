@@ -41,6 +41,12 @@ La fundacion tecnica incorpora `apps/api` (NestJS) y `apps/web` (React y Vite). 
 
 La API publica `GET /api/v1/health` para confirmar que el proceso responde y `GET /api/v1/health/database` para comprobar una consulta SQL minima; este ultimo devuelve 503 si PostgreSQL no responde. Vite proxifica `/api` hacia NestJS en desarrollo. `SystemMetadata` es una tabla tecnica global de conectividad, sin datos comerciales ni `tenantId`.
 
+## Implementacion de Fase 2
+
+NestJS usa guards globales en orden: comprobacion de origen para escrituras, autenticacion de sesion, resolucion de tenant activo y permiso requerido. Solo login y health son publicos. `me`, logout, listado de tenants y seleccion de tenant exigen sesion, pero no tenant activo. Toda ruta administrativa exige tenant activo y declara permiso; sin permiso declarado se deniega por defecto.
+
+La sesion es un token aleatorio en cookie HTTP-only; PostgreSQL guarda solo su hash SHA-256 y expiracion. El login no selecciona tenant automaticamente. Cada request de tenant vuelve a comprobar usuario, tenant y membresia activos y obtiene permisos del rol asociado. Los contratos HTTP estan en `docs/API_CONTRACTS.md`; `apps/web` permanece bajo trabajo frontend paralelo.
+
 ## Principios de diseno
 
 - Modularidad por dominio funcional.

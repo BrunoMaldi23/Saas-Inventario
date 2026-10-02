@@ -6,7 +6,9 @@ import {
 } from '@nestjs/common';
 import type { DatabaseHealthResponse, HealthResponse } from '@inventario/types';
 import { HealthService } from './health.service';
+import { Public } from './access.decorators';
 
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(@Inject(HealthService) private readonly health: HealthService) {}

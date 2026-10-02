@@ -4,7 +4,6 @@
   "private": true,
   "packageManager": "pnpm@9.14.0",
   "scripts": {
-    "postinstall": "prisma generate",
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "eslint .",
@@ -15,7 +14,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:status": "prisma migrate status"
+    "db:status": "prisma migrate status",
+    "db:bootstrap": "pnpm --filter @inventario/api build && pnpm --filter @inventario/api bootstrap"
   },
   "dependencies": {
     "@prisma/client": "6.19.3"

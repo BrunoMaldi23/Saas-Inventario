@@ -218,4 +218,24 @@ Fase 0 queda cerrada formalmente con estas decisiones documentadas. No se inicia
 
 Decision: usar PostgreSQL 16 en Compose, Prisma 6 con un unico cliente generado en la raiz del monorepo, y una tabla tecnica global `SystemMetadata`. La API expone health separado para proceso y base de datos; la web consulta ambos a traves del proxy de Vite en desarrollo.
 
-Motivo: permite verificar instalacion, migraciones y conectividad extremo a extremo sin introducir modelos comerciales ni servicios adicionales. Prisma Client se genera una vez durante `pnpm install`, en la raiz, para evitar copias divergentes entre paquetes pnpm y bloqueos del binario en Windows mientras la API esta abierta. El puerto local de PostgreSQL es configurable y el ejemplo usa 55432 para evitar conflictos con servidores locales en 5432.
+Motivo: permite verificar instalacion, migraciones y conectividad extremo a extremo sin introducir modelos comerciales ni servicios adicionales. Prisma Client se genera en la raiz para evitar copias divergentes entre paquetes pnpm. El puerto local de PostgreSQL es configurable y el ejemplo usa 55432 para evitar conflictos con servidores locales en 5432.
+
+Ajuste tecnico de Fase 2: la generacion se ejecuta explicitamente con `pnpm db:generate` tras instalar o cambiar el schema, y en CI antes de los checks. La generacion automatica en cada `pnpm install` fallaba en Windows cuando una API en desarrollo mantenia abierto el binario de Prisma. La API debe detenerse antes de regenerar el cliente.
+
+## DEC-016: Sesiones persistidas y tenant explicito
+
+Decision: sesion opaca aleatoria en cookie HTTP-only con expiracion de 8 horas y hash del token persistido en PostgreSQL. Login deja `activeTenantId` vacio; `select-tenant` solo acepta tenants con membresia activa. Cada ruta de tenant revalida la membresia y permisos en backend.
+
+Motivo: permite revocar en logout y reflejar de inmediato cambios de membresia sin Redis ni JWT accesible a JavaScript. No se necesita refresh token en esta fase.
+
+## DEC-017: RBAC inicial y bootstrap
+
+Decision: roles por tenant con permisos globales relacionados por `RolePermission`. Se crean los cinco roles aprobados al ejecutar explicitamente `pnpm db:bootstrap` con credenciales locales; no existe endpoint publico de alta de tenants. Owner gestiona todas las identidades; Admin puede gestionar usuarios con roles InventoryManager, BranchManager o Viewer, sin asignar ni modificar Owner o Admin. Se impide retirar al ultimo Owner activo.
+
+Motivo: mantiene permisos en la base y evita escalacion desde el frontend. La asociacion de una identidad existente a otro tenant usa `userId` conocido por el administrador; invitaciones y consentimiento quedan para una fase posterior si el producto los requiere.
+
+## DEC-018: Proteccion de escrituras con cookie
+
+Decision: `SameSite=Lax`, cookie host-only y comprobacion del origen de escrituras en la API, usando el mismo origen web/API. `Secure` se activa en produccion. No se habilita CORS cross-origin en Fase 2.
+
+Motivo: una cookie de sesion requiere proteccion CSRF; la comprobacion de origen complementa `SameSite` sin introducir un servicio ni token adicional en esta fase.

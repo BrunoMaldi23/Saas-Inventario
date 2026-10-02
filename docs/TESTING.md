@@ -104,6 +104,8 @@ Fase 2:
 
 - Login y RBAC cubiertos con pruebas relevantes.
 - Aislamiento multi-tenant probado.
+- Pruebas HTTP con PostgreSQL real: credenciales validas/invalidas, usuario inactivo, tenant inexistente o sin membresia, usuario de dos tenants, cambio de tenant, rutas sin sesion o permiso, scopes A/B, expiracion, logout y auditoria.
+- CI levanta PostgreSQL 16, aplica migraciones y ejecuta la suite antes del build.
 
 Fase 3:
 
