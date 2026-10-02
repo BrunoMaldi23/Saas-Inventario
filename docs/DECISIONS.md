@@ -213,3 +213,9 @@ Fase 0 queda cerrada formalmente con estas decisiones documentadas. No se inicia
 - Recuperacion de password en MVP o fase posterior.
 - Convencion final de cantidades en movimientos: signo unico o campos de direccion.
 - Mecanismo futuro de activacion de modulos especializados por rubro.
+
+## DEC-015: Fundacion tecnica de Fase 1
+
+Decision: usar PostgreSQL 16 en Compose, Prisma 6 con un unico cliente generado en la raiz del monorepo, y una tabla tecnica global `SystemMetadata`. La API expone health separado para proceso y base de datos; la web consulta ambos a traves del proxy de Vite en desarrollo.
+
+Motivo: permite verificar instalacion, migraciones y conectividad extremo a extremo sin introducir modelos comerciales ni servicios adicionales. Prisma Client se genera una vez durante `pnpm install`, en la raiz, para evitar copias divergentes entre paquetes pnpm y bloqueos del binario en Windows mientras la API esta abierta. El puerto local de PostgreSQL es configurable y el ejemplo usa 55432 para evitar conflictos con servidores locales en 5432.

@@ -36,15 +36,21 @@ Estado: cerrada formalmente.
 
 Objetivo: crear la base del monorepo y aplicaciones minimas.
 
-Tareas candidatas:
+Tareas ejecutadas:
 
 - Inicializar monorepo con pnpm y Turborepo.
 - Crear `apps/api` con NestJS.
 - Crear `apps/web` con React, Vite y TypeScript.
 - Crear configuracion base de TypeScript.
 - Crear gestion centralizada de variables de entorno.
-- Crear Docker Compose local para PostgreSQL solo cuando se inicie implementacion.
-- Crear pipeline basico de checks cuando exista codigo.
+- Crear Docker Compose local solo para PostgreSQL.
+- Crear schema y migracion Prisma con `SystemMetadata`.
+- Crear health de API y base de datos, con pantalla tecnica de conectividad.
+- Crear paquetes compartidos minimos y pipeline de checks.
+
+Criterios de aceptacion: instalacion, Compose healthy, migracion aplicada, lint, typecheck, tests, build y consultas HTTP reales satisfactorias. Sin modulos comerciales, autenticacion, tenants, worker ni Redis.
+
+Estado: completada y validada localmente. El workflow de CI esta creado; su primera ejecucion en GitHub queda pendiente de publicar los cambios.
 
 ## Fase 2: Identidad y multi-tenancy
 

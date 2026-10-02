@@ -97,6 +97,8 @@ Fase 1:
 
 - Build y checks basicos ejecutan.
 - Configuracion base validada.
+- Test HTTP de health de API y respuesta 503 cuando la base de datos no esta disponible.
+- Validacion real: PostgreSQL healthy en Compose, migracion aplicada, endpoints API y pantalla web conectada.
 
 Fase 2:
 

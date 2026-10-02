@@ -35,6 +35,12 @@ InventarioSaaS/
 
 Durante Fase 0 no se crean aplicaciones ni paquetes. Esta estructura es una guia para fases posteriores.
 
+## Implementacion de Fase 1
+
+La fundacion tecnica incorpora `apps/api` (NestJS) y `apps/web` (React y Vite). No se crea `apps/worker`: se agregara cuando existan jobs reales. Los paquetes `types`, `validation`, `config` y `api-client` contienen, respectivamente, contratos de health, validacion de respuestas, validacion de entorno del servidor y consultas HTTP de health. PostgreSQL es el unico servicio de Compose. Redis permanece fuera de la implementacion segun DEC-007.
+
+La API publica `GET /api/v1/health` para confirmar que el proceso responde y `GET /api/v1/health/database` para comprobar una consulta SQL minima; este ultimo devuelve 503 si PostgreSQL no responde. Vite proxifica `/api` hacia NestJS en desarrollo. `SystemMetadata` es una tabla tecnica global de conectividad, sin datos comerciales ni `tenantId`.
+
 ## Principios de diseno
 
 - Modularidad por dominio funcional.
